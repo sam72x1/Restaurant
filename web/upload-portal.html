@@ -227,8 +227,8 @@
       <button class="btn btn-secondary" id="btn-files" type="button" disabled>تصفّح الملفات</button>
     </div>
     <p class="queue" id="queue" hidden></p>
-    <p class="limit">اختر <strong>10 صور كحد أقصى</strong> في المرة الواحدة</p>
-    <p class="hint" id="hint">اختيار أكبر يُعلّق متصفح الجوال وهو يحوّل الصور، قبل أن تصل الصفحة أصلًا — وهذا خارج ما تستطيع الصفحة معالجته. «تصفّح الملفات» يتجاوز هذه المرحلة وقد يقبل عددًا أكبر.</p>
+    <p class="limit">لا حد على عدد الصور — أعد اختيار الدفعة كاملة متى انقطعت، وسيرفع الناقص فقط</p>
+    <p class="hint" id="hint">لو تجمّد جهازك قبل ظهور أي صف، فالتعليق في مرحلة تحويل الصور داخل النظام نفسه، قبل أن تصل الصفحة. حينها جرّب <strong>«تصفّح الملفات»</strong> فهو يتجاوز تلك المرحلة، أو ارفع من كمبيوتر.</p>
     <input type="file" id="picker" name="picker" multiple accept="image/*" hidden>
     <input type="file" id="pdfpicker" name="pdfpicker" multiple accept="application/pdf,.pdf" hidden>
     <input type="file" id="camera" name="camera" accept="image/*" capture="environment" hidden>
@@ -667,11 +667,23 @@
     render();
   }
 
+  function fileKey(f){
+    return (f.name || "?") + "|" + f.size + "|" + (f.lastModified || 0);
+  }
+
+  var batchStart = 0;
   function setQueue(done, total){
     var q = el("queue");
     if(!total){ q.hidden = true; return; }
     q.hidden = false;
-    q.textContent = "جارٍ الرفع: " + done + " من " + total + " — لا تخرج من الصفحة";
+    var txt = "جارٍ الرفع: " + done + " من " + total;
+    if(done >= 2 && batchStart){
+      var per = (Date.now() - batchStart) / done;
+      var left = Math.round(per * (total - done) / 1000);
+      txt += left > 90 ? " — متبقٍ ~" + Math.ceil(left / 60) + " دقيقة"
+                       : " — متبقٍ ~" + left + " ثانية";
+    }
+    q.textContent = txt + " · لا تخرج من الصفحة";
   }
 
   function handleFiles(fileList){
@@ -681,17 +693,32 @@
       banner("التخزين لم يفتح بعد. انتظر حتى تصبح النقطة خضراء ثم أعد المحاولة.", true);
       return Promise.resolve();
     }
-    if(files.length > 15){
-      files = files.slice(0, 15);
-      log("!! قُصّت الدفعة إلى 15 ملفًا");
-      banner("اخترت عددًا كبيرًا. سأرفع أول 15 فقط — متصفح الجوال يتوقف مع الدفعات الكبيرة. " +
-             "كرّر الاختيار للباقي بعد أن ينتهي العدّاد.");
+    // تخطّي ما رُفع من قبل: إعادة اختيار الدفعة كاملة ترفع الناقص فقط
+    var seen = {};
+    rows.forEach(function(r){
+      if(r.fileKey && r.status !== "error") seen[r.fileKey] = true;
+    });
+    var total0 = files.length, skipped = 0;
+    files = files.filter(function(f){
+      if(seen[fileKey(f)]){ skipped++; return false; }
+      return true;
+    });
+    if(skipped) log("• تُخطّي " + skipped + " ملفًا مرفوعًا من قبل");
+    if(!files.length){
+      banner("كل الملفات المختارة (" + total0 + ") مرفوعة مسبقًا — لا جديد.");
+      return Promise.resolve();
+    }
+    if(total0 > 40){
+      banner("دفعة كبيرة: " + files.length + " ملفًا" + (skipped ? " (تُخطّي " + skipped + " مرفوعًا)" : "") +
+             ". اتركها تعمل. لو خرجت من الصفحة تتوقف مؤقتًا وتستأنف حين تعود، " +
+             "ولو انقطعت أعد اختيار نفس الصور — سيرفع الناقص فقط.");
     }
     var cat = currentCat();
     var note = el("note").value.trim();
     var chain = Promise.resolve();
     var done = 0;
     acquireWake();
+    batchStart = Date.now();
     setQueue(0, files.length);
     files.forEach(function(f){
       chain = chain.then(function(){
@@ -711,6 +738,7 @@
 
   function uploadOne(file, category, note){
     var id = mintId();
+    var key = fileKey(file);
     var ref = db.collection("uploads").doc(id);
     var isImage = looksLikeImage(file);
     var base = {
@@ -721,7 +749,8 @@
       originalSize: file.size,
       createdAt: new Date().toISOString(),
       status: "uploading",
-      chunks: 0
+      chunks: 0,
+      fileKey: key
     };
     busy++;
     active[id] = true;
