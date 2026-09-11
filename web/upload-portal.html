@@ -315,6 +315,43 @@
   var el = function(id){ return document.getElementById(id); };
 
   var LOG = [], t0 = Date.now(), logPending = false;
+
+  // ── تيليمتري ──────────────────────────────────────────────
+  // بلا سجل من جهازك الفعلي كنت أصلح تخمينًا. هذه تكتب المسار
+  // إلى قاعدة البيانات فأقرأه من المحادثة دون أن تنسخ شيئًا.
+  var SESSION = "s" + String(t0).slice(-9);
+  var beaconBuf = [], beaconLast = 0, beaconTimer = null, beaconSeq = 0;
+
+  function flushBeacon(){
+    beaconTimer = null;
+    if(!db || !beaconBuf.length) return;
+    beaconLast = Date.now();
+    var body = {
+      ua: (navigator.userAgent || "").slice(0, 200),
+      startedAt: new Date(t0).toISOString(),
+      updatedAt: new Date().toISOString(),
+      events: beaconBuf.slice(-70).join("\n")
+    };
+    try {
+      var w = db.collection("diag").doc(SESSION).set(body);
+      if(w && w.catch) w.catch(function(){});
+    } catch(e){}
+  }
+
+  function beacon(line){
+    beaconBuf.push(line);
+    if(beaconBuf.length > 200) beaconBuf.shift();
+    beaconSeq++;
+    var urgent = beaconSeq <= 24 || line.indexOf("!!") !== -1 || line.indexOf("==") === 0;
+    var since = Date.now() - beaconLast;
+    if(urgent || since > 4000){
+      if(beaconTimer){ clearTimeout(beaconTimer); beaconTimer = null; }
+      flushBeacon();
+    } else if(!beaconTimer){
+      beaconTimer = setTimeout(flushBeacon, 4000);
+    }
+  }
+  // ──────────────────────────────────────────────────────────
   function flushLog(){
     logPending = false;
     var box = el("diag-log");
@@ -323,7 +360,9 @@
     box.scrollTop = box.scrollHeight;
   }
   function log(msg){
-    LOG.push("[" + ((Date.now() - t0) / 1000).toFixed(1) + "s] " + msg);
+    var line = "[" + ((Date.now() - t0) / 1000).toFixed(1) + "s] " + msg;
+    LOG.push(line);
+    try { beacon(line); } catch(e){}
     if(LOG.length > 400) LOG.shift();
     // الكتابة وقياس التخطيط عند كل سطر يكلّفان ثوانٍ عبر دفعة كبيرة
     var d = el("diag");
@@ -960,7 +999,11 @@
     var input = el(id);
     input.addEventListener("change", function(){
       var files = Array.prototype.slice.call(input.files || []);
-      log("== حدث الاختيار (" + id + "): وصلت " + files.length + " ملفات");
+      var bytes = 0;
+      files.forEach(function(f){ bytes += f.size || 0; });
+      log("== حدث الاختيار (" + id + "): وصلت " + files.length + " ملفات · " +
+          Math.round(bytes / 1048576) + " م.ب");
+      flushBeacon();
       if(!files.length){
         log("!! المتصفح لم يسلّم أي ملف — قلّل عدد الصور المختارة");
         banner("المتصفح لم يسلّم أي صورة. جرّب اختيار 5 صور فقط.", true);
@@ -999,7 +1042,9 @@
   log("claude.use متاح — جارٍ فتح التخزين…");
   Promise.all([window.claude.use("db"), window.claude.use("assets")]).then(function(pair){
     db = pair[0]; assets = pair[1];
-    log("db=" + (db ? "متصل" : "فارغ") + " | assets=" + (assets ? "متصل" : "فارغ"));
+    log("db=" + (db ? "متصل" : "فارغ") + " | assets=" + (assets ? "متصل" : "فارغ") +
+        " | جلسة=" + SESSION);
+    flushBeacon();
     if(!db){
       setConn("off", "التخزين غير متاح");
       el("hint").textContent = "تعذّر فتح التخزين في هذا العرض. جرّب إعادة تحميل الصفحة.";
