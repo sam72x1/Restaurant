@@ -1,0 +1,659 @@
+<title>مستندات صفقة المطعم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Kufi+Arabic:wght@600;700&display=swap">
+<style>
+  :root{
+    --bg:#F3F6F6; --surface:#FFFFFF; --surface-2:#E8EEEF; --sunken:#EDF2F2;
+    --ink:#15242A; --ink-2:#56696F; --ink-3:#80959B; --line:#D2DDDF; --line-2:#BDCBCE;
+    --accent:#0B6B73; --accent-ink:#FFFFFF; --accent-soft:#DBECEC; --accent-line:#9DC7C8;
+    --ok:#166B45; --ok-soft:#DCEFE4; --ok-line:#A5CFB8;
+    --warn:#8A5606; --warn-soft:#F6EAD4; --warn-line:#DCC08A;
+    --danger:#9B2A26; --danger-soft:#F6E0DE; --danger-line:#DFAAA6;
+    --shadow:0 1px 2px rgba(16,38,44,.06), 0 6px 20px -12px rgba(16,38,44,.22);
+    --r:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0C1316; --surface:#141E22; --surface-2:#1B272C; --sunken:#111A1E;
+      --ink:#E3EBED; --ink-2:#8EA2A8; --ink-3:#6B7E85; --line:#26353A; --line-2:#33464C;
+      --accent:#46C7D1; --accent-ink:#06232A; --accent-soft:#123037; --accent-line:#1E4A53;
+      --ok:#5FD096; --ok-soft:#10291E; --ok-line:#20452F;
+      --warn:#E2AC55; --warn-soft:#2A2113; --warn-line:#4A3A1C;
+      --danger:#F0908A; --danger-soft:#2C1615; --danger-line:#4D2624;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0C1316; --surface:#141E22; --surface-2:#1B272C; --sunken:#111A1E;
+    --ink:#E3EBED; --ink-2:#8EA2A8; --ink-3:#6B7E85; --line:#26353A; --line-2:#33464C;
+    --accent:#46C7D1; --accent-ink:#06232A; --accent-soft:#123037; --accent-line:#1E4A53;
+    --ok:#5FD096; --ok-soft:#10291E; --ok-line:#20452F;
+    --warn:#E2AC55; --warn-soft:#2A2113; --warn-line:#4A3A1C;
+    --danger:#F0908A; --danger-soft:#2C1615; --danger-line:#4D2624;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -14px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--bg); color:var(--ink); margin:0;
+    font-family:"IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;
+    font-size:15px; line-height:1.65; -webkit-text-size-adjust:100%;
+  }
+  .page{ direction:rtl; max-width:780px; margin:0 auto; padding-inline:18px; padding-block:26px 60px; }
+  .num{ font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+
+  /* ---------- رأس الصفحة ---------- */
+  .masthead{ display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px 18px; margin-bottom:6px; }
+  h1{
+    font-family:"Noto Kufi Arabic","IBM Plex Sans Arabic",sans-serif; font-weight:700;
+    font-size:clamp(22px,5.2vw,29px); line-height:1.3; margin:0; letter-spacing:-.01em;
+    text-wrap:balance;
+  }
+  .lede{ color:var(--ink-2); margin:6px 0 0; max-width:56ch; font-size:14.5px; }
+
+  .conn{ display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink-2);
+         border:1px solid var(--line); background:var(--surface); border-radius:999px;
+         padding:4px 11px 4px 12px; white-space:nowrap; }
+  .dot{ width:7px; height:7px; border-radius:50%; background:var(--ink-3); flex:none; }
+  .conn[data-state="on"] .dot{ background:var(--ok); }
+  .conn[data-state="off"] .dot{ background:var(--danger); }
+
+  /* ---------- شريط الأرقام ---------- */
+  .meters{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line);
+           border:1px solid var(--line); border-radius:var(--r); overflow:hidden; margin:22px 0 26px; }
+  .meter{ background:var(--surface); padding:13px 14px 14px; }
+  .meter dt{ font-size:11.5px; color:var(--ink-2); letter-spacing:.05em; margin:0 0 3px; }
+  .meter dd{ margin:0; font-size:21px; font-weight:500; line-height:1.2; }
+  .meter dd small{ font-size:12px; color:var(--ink-2); font-weight:400; margin-inline-start:6px; letter-spacing:.01em; }
+  @media (max-width:430px){ .meters{ grid-template-columns:1fr 1fr; } .meter:last-child{ grid-column:1/-1; } }
+
+  /* ---------- التصنيف ---------- */
+  .field{ margin-bottom:18px; }
+  .field > label, .legend{ display:block; font-size:12.5px; font-weight:600; color:var(--ink-2);
+                           letter-spacing:.03em; margin-bottom:9px; }
+  fieldset{ border:0; padding:0; margin:0 0 18px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; }
+  .chip input{ position:absolute; opacity:0; width:0; height:0; }
+  .chip span{
+    display:block; cursor:pointer; border:1px solid var(--line-2); background:var(--surface);
+    color:var(--ink-2); border-radius:999px; padding:6px 13px; font-size:13.5px;
+    transition:background .12s, color .12s, border-color .12s;
+  }
+  .chip input:checked + span{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:500; }
+  .chip input:focus-visible + span{ outline:2px solid var(--accent); outline-offset:2px; }
+  .chip span:hover{ border-color:var(--accent-line); }
+
+  #note{
+    width:100%; border:1px solid var(--line-2); background:var(--surface); color:var(--ink);
+    border-radius:var(--r); padding:10px 12px; font:inherit; font-size:14px;
+  }
+  #note:focus-visible{ outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+
+  /* ---------- منطقة الرفع ---------- */
+  .drop{
+    border:1.5px dashed var(--line-2); background:var(--sunken); border-radius:14px;
+    padding:26px 20px; text-align:center; transition:border-color .15s, background .15s;
+  }
+  .drop.hot{ border-color:var(--accent); background:var(--accent-soft); }
+  .drop h2{ font-family:"Noto Kufi Arabic",sans-serif; font-size:16px; font-weight:600; margin:0 0 4px; }
+  .drop p{ margin:0 0 16px; color:var(--ink-2); font-size:13.5px; }
+  .actions{ display:flex; flex-wrap:wrap; gap:9px; justify-content:center; }
+  .btn{
+    font:inherit; font-size:14px; font-weight:500; cursor:pointer; border-radius:var(--r);
+    padding:10px 18px; border:1px solid transparent; display:inline-flex; align-items:center; gap:7px;
+  }
+  .btn-primary{ background:var(--accent); color:var(--accent-ink); }
+  .btn-secondary{ background:var(--surface); color:var(--ink); border-color:var(--line-2); }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+  .btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .btn-primary:hover:not(:disabled){ filter:brightness(1.08); }
+  .btn-secondary:hover:not(:disabled){ border-color:var(--accent-line); }
+  .hint{ margin:12px 0 0; font-size:12px; color:var(--ink-3); }
+
+  /* ---------- القائمة ---------- */
+  .list-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+              margin:34px 0 12px; padding-bottom:9px; border-bottom:1px solid var(--line); }
+  .list-head h2{ font-family:"Noto Kufi Arabic",sans-serif; font-size:16px; font-weight:600; margin:0; }
+  .list-head span{ font-size:12.5px; color:var(--ink-2); }
+
+  ol.docs{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; }
+  .doc{
+    display:grid; grid-template-columns:52px 1fr auto; gap:13px; align-items:center;
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+    padding:11px 12px; box-shadow:var(--shadow);
+  }
+  .thumb{
+    width:52px; height:52px; border-radius:7px; background:var(--surface-2); overflow:hidden;
+    display:flex; align-items:center; justify-content:center; flex:none;
+    font-size:10.5px; color:var(--ink-2); font-weight:600; letter-spacing:.04em; text-align:center;
+  }
+  .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .doc-main{ min-width:0; }
+  .doc-name{ font-size:14px; font-weight:500; overflow-wrap:anywhere; line-height:1.4; }
+  .doc-note{ font-size:12.5px; color:var(--ink-2); overflow-wrap:anywhere; }
+  .doc-meta{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:5px; font-size:11.5px; }
+  .tag{ border:1px solid var(--line-2); color:var(--ink-2); border-radius:5px; padding:1px 7px; white-space:nowrap; }
+  .state{ border-radius:5px; padding:1px 7px; font-weight:500; white-space:nowrap; border:1px solid; }
+  .state.stored{ background:var(--warn-soft); color:var(--warn); border-color:var(--warn-line); }
+  .state.working{ background:var(--accent-soft); color:var(--accent); border-color:var(--accent-line); }
+  .state.received{ background:var(--accent-soft); color:var(--accent); border-color:var(--accent-line); }
+  .state.done{ background:var(--ok-soft); color:var(--ok); border-color:var(--ok-line); }
+  .state.error{ background:var(--danger-soft); color:var(--danger); border-color:var(--danger-line); }
+  .doc.is-error{ border-color:var(--danger-line); }
+  .doc-side{ display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+  .kill{
+    border:0; background:none; color:var(--ink-3); cursor:pointer; font:inherit; font-size:12px;
+    padding:3px 5px; border-radius:5px;
+  }
+  .kill:hover{ color:var(--danger); background:var(--danger-soft); }
+  .kill:focus-visible{ outline:2px solid var(--danger); outline-offset:1px; }
+  .bar{ width:64px; height:3px; border-radius:2px; background:var(--surface-2); overflow:hidden; }
+  .bar i{ display:block; height:100%; background:var(--accent); width:0; transition:width .25s; }
+
+  .empty{ border:1px dashed var(--line); border-radius:var(--r); padding:26px 18px; text-align:center;
+          color:var(--ink-2); font-size:13.5px; background:var(--sunken); }
+
+  .foot{ margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+         color:var(--ink-2); font-size:12.5px; }
+  .foot strong{ color:var(--ink); font-weight:600; }
+  .foot ul{ margin:8px 0 0; padding-inline-start:18px; }
+  .foot li{ margin-bottom:3px; }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+</style>
+
+<div class="page">
+  <header>
+    <div class="masthead">
+      <h1>مستندات صفقة المطعم</h1>
+      <span class="conn" id="conn" data-state="wait"><span class="dot"></span><span id="conn-text">جارٍ فتح التخزين…</span></span>
+    </div>
+    <p class="lede">صوّر الفاتورة أو التقرير، اختر تصنيفه، وارفعه. الملف يُحفظ هنا بجودته الأصلية، وتُجهَّز نسخة يقرأها كلود في المحادثة.</p>
+  </header>
+
+  <dl class="meters">
+    <div class="meter"><dt>مستند مرفوع</dt><dd class="num" id="m-count">0</dd></div>
+    <div class="meter"><dt>بانتظار كلود</dt><dd class="num" id="m-pending">0</dd></div>
+    <div class="meter"><dt>المساحة المستخدمة</dt><dd class="num" id="m-size">0<small>م.ب</small></dd></div>
+  </dl>
+
+  <fieldset>
+    <legend class="legend">تصنيف المستند</legend>
+    <div class="chips" id="cats"></div>
+  </fieldset>
+
+  <div class="field">
+    <label for="note">ملاحظة (اختياري) — الشهر أو اسم المورد</label>
+    <input type="text" id="note" name="note" placeholder="مثال: أغسطس 2026 — مورد اللحوم" autocomplete="off">
+  </div>
+
+  <div class="drop" id="drop">
+    <h2>اسحب الملفات هنا</h2>
+    <p>صور، أو ملفات PDF</p>
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-cam" type="button" disabled>التقاط بالكاميرا</button>
+      <button class="btn btn-secondary" id="btn-pick" type="button" disabled>اختيار من الجهاز</button>
+    </div>
+    <p class="hint" id="hint">الصفحة خاصة بك — ولا يمكن مشاركتها علنًا لأنها تحفظ بيانات.</p>
+    <input type="file" id="picker" name="picker" multiple accept="image/*,application/pdf" hidden>
+    <input type="file" id="camera" name="camera" accept="image/*" capture="environment" hidden>
+  </div>
+
+  <div class="list-head">
+    <h2>المرفوعات</h2>
+    <span id="list-note"></span>
+  </div>
+  <ol class="docs" id="docs"></ol>
+  <div class="empty" id="empty">لا يوجد شيء بعد. ابدأ بتقارير نقاط البيع وفواتير الكهرباء — هي أثقل بند في القرار.</div>
+
+  <div class="foot">
+    <strong>كيف تصل الملفات لكلود</strong>
+    <ul>
+      <li>كل ملف يُحفظ هنا بكامله، وتُقسَّم نسخة القراءة على أجزاء لتجاوز حد حجم السجل الواحد.</li>
+      <li>بعد الرفع، قل في المحادثة: «رفعت» — يسحبها كلود ويقرأها ويحدّث حالتها هنا.</li>
+      <li>«أُدخل في الدراسة» يعني أن الرقم انتقل فعليًا إلى النموذج المالي.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var CATS = [
+    {id:"pos",      label:"تقرير نقاط بيع"},
+    {id:"supplier", label:"فاتورة مورد"},
+    {id:"utility",  label:"كهرباء / مياه"},
+    {id:"payroll",  label:"رواتب"},
+    {id:"bank",     label:"كشف بنكي"},
+    {id:"vat",      label:"إقرار ضريبي"},
+    {id:"contract", label:"عقد"},
+    {id:"license",  label:"رخصة"},
+    {id:"other",    label:"أخرى"}
+  ];
+  var CAT_LABEL = {}; CATS.forEach(function(c){ CAT_LABEL[c.id] = c.label; });
+
+  var STATE_LABEL = {
+    uploading:["working","جارٍ الرفع"],
+    stored:["stored","بانتظار كلود"],
+    received:["received","استلمه كلود"],
+    done:["done","أُدخل في الدراسة"],
+    error:["error","فشل الرفع"]
+  };
+
+  // حدود المنصة: مستند قاعدة البيانات 256 كيلوبايت، والأصل 20 ميجابايت.
+  var CHUNK = 230000;              // حروف base64 لكل جزء
+  var TARGET_B64 = 1250000;        // حجم نسخة القراءة المستهدف للصور
+  var RAW_MAX = 4 * 1024 * 1024;   // أقصى حجم لملف غير صورة يُنقل كما هو
+  var ASSET_MAX = 20 * 1024 * 1024;
+  var ASSET_TYPES = ["image/png","image/jpeg","image/gif","image/webp","application/pdf"];
+  var LADDER = [[2000,0.85],[1700,0.80],[1400,0.72],[1150,0.65],[950,0.60]];
+
+  var ERRORS = {
+    unsupported_type:"نوع ملف غير مدعوم — أرسله كـ JPG أو PDF",
+    too_large:"الملف أكبر من الحد المسموح",
+    quota_or_state:"المساحة ممتلئة — احذف ملفات قديمة",
+    rate_limited:"محاولات كثيرة — انتظر لحظة",
+    invalid_argument:"بيانات غير صالحة",
+    invalid_request:"طلب غير صالح",
+    store_unavailable:"التخزين غير متاح مؤقتًا — أعد المحاولة",
+    unavailable:"التخزين غير متاح مؤقتًا — أعد المحاولة",
+    quota_exceeded:"بلغت حد عدد المستندات",
+    resource_exhausted:"ضغط على التخزين — أعد المحاولة بعد قليل",
+    not_granted:"لا توجد صلاحية حفظ في هذا العرض",
+    upstream_auth:"أعد تحميل الصفحة وسجّل الدخول"
+  };
+  function errorText(code){ return ERRORS[code] || String(code); }
+
+  var el = function(id){ return document.getElementById(id); };
+  var db = null, assets = null, unsub = null, rows = [], busy = 0;
+
+  /* ---------------- بناء الواجهة ---------------- */
+  var catsBox = el("cats");
+  CATS.forEach(function(c, i){
+    var lab = document.createElement("label");
+    lab.className = "chip";
+    var input = document.createElement("input");
+    input.type = "radio"; input.name = "category"; input.value = c.id;
+    input.id = "cat-" + c.id; input.checked = (i === 0);
+    var span = document.createElement("span");
+    span.textContent = c.label;
+    lab.appendChild(input); lab.appendChild(span);
+    catsBox.appendChild(lab);
+  });
+  function currentCat(){
+    var hit = catsBox.querySelector("input:checked");
+    return hit ? hit.value : "other";
+  }
+
+  function setConn(state, text){
+    var box = el("conn");
+    box.setAttribute("data-state", state);
+    el("conn-text").textContent = text;
+  }
+
+  function fmtBytes(n){
+    if(!n && n !== 0) return "—";
+    if(n < 1024) return n + " بايت";
+    if(n < 1048576) return (n/1024).toFixed(0) + " ك.ب";
+    return (n/1048576).toFixed(1) + " م.ب";
+  }
+  function fmtWhen(iso){
+    if(!iso) return "";
+    var d = new Date(iso);
+    if(isNaN(d)) return "";
+    var p = function(x){ return x < 10 ? "0"+x : ""+x; };
+    return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+  }
+
+  /* ---------------- الرسم ---------------- */
+  function render(){
+    var list = el("docs"), empty = el("empty");
+    list.textContent = "";
+    if(!rows.length){ empty.hidden = false; el("list-note").textContent = ""; paintMeters(); return; }
+    empty.hidden = true;
+
+    rows.forEach(function(r){
+      var li = document.createElement("li");
+      li.className = "doc" + (r.status === "error" ? " is-error" : "");
+
+      var th = document.createElement("div");
+      th.className = "thumb";
+      if(r.assetId && r.mime && r.mime.indexOf("image/") === 0){
+        var img = document.createElement("img");
+        img.src = "/_blob/" + r.assetId; img.alt = ""; img.loading = "lazy";
+        th.appendChild(img);
+      } else {
+        th.textContent = (r.mime === "application/pdf") ? "PDF" : "ملف";
+      }
+      li.appendChild(th);
+
+      var main = document.createElement("div");
+      main.className = "doc-main";
+      var nm = document.createElement("div");
+      nm.className = "doc-name"; nm.textContent = r.name || "بدون اسم";
+      main.appendChild(nm);
+      if(r.note){
+        var nt = document.createElement("div");
+        nt.className = "doc-note"; nt.textContent = r.note;
+        main.appendChild(nt);
+      }
+      var meta = document.createElement("div");
+      meta.className = "doc-meta";
+      var st = STATE_LABEL[r.status] || STATE_LABEL.stored;
+      var badge = document.createElement("span");
+      badge.className = "state " + st[0]; badge.textContent = st[1];
+      meta.appendChild(badge);
+      [CAT_LABEL[r.category] || "أخرى", fmtBytes(r.originalSize)].forEach(function(t){
+        if(!t) return;
+        var s = document.createElement("span");
+        s.className = "tag"; s.textContent = t;
+        meta.appendChild(s);
+      });
+      var when = fmtWhen(r.createdAt);
+      if(when){
+        var w = document.createElement("span");
+        w.className = "tag num"; w.setAttribute("dir", "ltr"); w.textContent = when;
+        meta.appendChild(w);
+      }
+      if(r.error){
+        var e = document.createElement("span");
+        e.className = "tag"; e.textContent = errorText(r.error);
+        meta.appendChild(e);
+      }
+      main.appendChild(meta);
+      li.appendChild(main);
+
+      var side = document.createElement("div");
+      side.className = "doc-side";
+      if(r.status === "uploading"){
+        var bar = document.createElement("div");
+        bar.className = "bar";
+        var fill = document.createElement("i");
+        fill.style.width = Math.round((r.progress || 0) * 100) + "%";
+        bar.appendChild(fill); side.appendChild(bar);
+      } else {
+        var del = document.createElement("button");
+        del.type = "button"; del.className = "kill"; del.textContent = "حذف";
+        del.setAttribute("aria-label", "حذف " + (r.name || "المستند"));
+        del.addEventListener("click", function(){ removeDoc(r); });
+        side.appendChild(del);
+      }
+      li.appendChild(side);
+      list.appendChild(li);
+    });
+
+    var pending = rows.filter(function(r){ return r.status === "stored"; }).length;
+    var bad = rows.filter(function(r){ return r.status === "error"; }).length;
+    el("list-note").textContent = pending ? (pending + " بانتظار السحب")
+                                : bad ? (bad + " فشل — أعد الرفع")
+                                : "كل شيء وصل";
+    paintMeters();
+  }
+
+  function paintMeters(){
+    el("m-count").textContent = rows.filter(function(r){ return r.status !== "error"; }).length;
+    el("m-pending").textContent = rows.filter(function(r){ return r.status === "stored"; }).length;
+  }
+
+  function paintUsage(){
+    if(!assets) return;
+    assets.list().then(function(res){
+      var u = res && res.usage;
+      if(!u) return;
+      var mb = u.bytes / 1048576;
+      el("m-size").innerHTML = (mb < 10 ? mb.toFixed(1) : Math.round(mb)) +
+        '<small>م.ب من ' + Math.round((u.maxBytes || 0) / 1048576) + '</small>';
+    }).catch(function(){});
+  }
+
+  /* ---------------- ضغط الصور ---------------- */
+  function drawJpeg(bmp, maxSide, q){
+    var scale = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
+    var w = Math.max(1, Math.round(bmp.width * scale));
+    var h = Math.max(1, Math.round(bmp.height * scale));
+    var c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    var ctx = c.getContext("2d");
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(bmp, 0, 0, w, h);
+    return new Promise(function(res, rej){
+      c.toBlob(function(b){ b ? res(b) : rej(new Error("تعذّر ترميز الصورة")); }, "image/jpeg", q);
+    });
+  }
+
+  function makeReadable(file){
+    if(typeof createImageBitmap !== "function") return Promise.resolve(file);
+    var bmpP;
+    try { bmpP = createImageBitmap(file, {imageOrientation:"from-image"}); }
+    catch(err){ bmpP = createImageBitmap(file); }
+    return bmpP.catch(function(){ return createImageBitmap(file); }).then(function(bmp){
+      var i = 0, best = null;
+      function step(){
+        if(i >= LADDER.length) return best;
+        var pair = LADDER[i++];
+        return drawJpeg(bmp, pair[0], pair[1]).then(function(blob){
+          best = blob;
+          if(blob.size * 4 / 3 <= TARGET_B64) return best;
+          return step();
+        });
+      }
+      return step().then(function(out){
+        if(bmp.close) bmp.close();
+        return out;
+      });
+    });
+  }
+
+  function toBase64(blob){
+    return new Promise(function(res, rej){
+      var fr = new FileReader();
+      fr.onload = function(){
+        var s = String(fr.result);
+        res(s.slice(s.indexOf(",") + 1));
+      };
+      fr.onerror = function(){ rej(fr.error || new Error("تعذّرت قراءة الملف")); };
+      fr.readAsDataURL(blob);
+    });
+  }
+
+  /* ---------------- الرفع ---------------- */
+  function mintId(){
+    return String(Date.now()).slice(-9) + "-" + Math.random().toString(36).slice(2, 8);
+  }
+
+  function localRow(id, patch){
+    var hit = null;
+    for(var i = 0; i < rows.length; i++){ if(rows[i].id === id){ hit = rows[i]; break; } }
+    if(!hit){ hit = {id:id}; rows.unshift(hit); }
+    for(var k in patch){ if(Object.prototype.hasOwnProperty.call(patch, k)) hit[k] = patch[k]; }
+    render();
+  }
+
+  function handleFiles(fileList){
+    var files = Array.prototype.slice.call(fileList || []);
+    if(!files.length) return;
+    if(!db){ alert("التخزين غير جاهز بعد. انتظر لحظة ثم أعد المحاولة."); return; }
+    var cat = currentCat();
+    var note = el("note").value.trim();
+    var chain = Promise.resolve();
+    files.forEach(function(f){
+      chain = chain.then(function(){ return uploadOne(f, cat, note); });
+    });
+    chain.then(function(){
+      el("note").value = "";
+      paintUsage();
+    });
+  }
+
+  function uploadOne(file, category, note){
+    var id = mintId();
+    var ref = db.collection("uploads").doc(id);
+    var isImage = (file.type || "").indexOf("image/") === 0;
+    var base = {
+      name: file.name || "مستند",
+      category: category,
+      note: note || "",
+      mime: file.type || "",
+      originalSize: file.size,
+      createdAt: new Date().toISOString(),
+      status: "uploading",
+      chunks: 0
+    };
+    busy++;
+    setConn("on", "جارٍ الرفع…");
+    localRow(id, Object.assign({}, base, {progress: 0.05}));
+
+    return ref.set(base).then(function(){
+      return isImage ? makeReadable(file).catch(function(){ return file; })
+                     : Promise.resolve(file.size <= RAW_MAX ? file : null);
+    }).then(function(readable){
+      localRow(id, {progress: 0.25});
+      // 1) حفظ النسخة الأصلية كأصل دائم
+      var forAsset = null, assetType = null;
+      if(ASSET_TYPES.indexOf(file.type) !== -1 && file.size <= ASSET_MAX){
+        forAsset = file; assetType = file.type;
+      } else if(readable && readable !== file){
+        forAsset = readable; assetType = "image/jpeg";
+      }
+      var assetP = forAsset && assets
+        ? assets.upload(forAsset, assetType ? {type: assetType} : undefined)
+                .then(function(r){ return r.id; })
+                .catch(function(){ return null; })
+        : Promise.resolve(null);
+      return assetP.then(function(assetId){ return {assetId: assetId, readable: readable}; });
+    }).then(function(ctx){
+      localRow(id, {progress: 0.4, assetId: ctx.assetId});
+      if(!ctx.readable){
+        return ref.update({
+          status: "stored", assetId: ctx.assetId, chunks: 0, transfer: "asset_only",
+          error: "أكبر من حد النقل — محفوظ كأصل فقط"
+        }).then(function(){ return null; });
+      }
+      return toBase64(ctx.readable).then(function(b64){
+        var parts = [];
+        for(var i = 0; i < b64.length; i += CHUNK) parts.push(b64.slice(i, i + CHUNK));
+        if(parts.length > 48) throw new Error("الملف كبير جدًا على النقل");
+        var p = Promise.resolve();
+        parts.forEach(function(txt, i){
+          p = p.then(function(){
+            return ref.collection("parts").doc(("000" + i).slice(-4)).set({i: i, b64: txt});
+          }).then(function(){
+            localRow(id, {progress: 0.4 + 0.55 * (i + 1) / parts.length});
+          });
+        });
+        return p.then(function(){
+          return ref.update({
+            status: "stored",
+            assetId: ctx.assetId,
+            chunks: parts.length,
+            transfer: "chunked",
+            transferMime: ctx.readable.type || file.type || "application/octet-stream",
+            transferSize: ctx.readable.size,
+            b64Length: b64.length
+          });
+        });
+      });
+    }).then(function(){
+      localRow(id, {status: "stored", progress: 1});
+    }).catch(function(err){
+      var msg = (err && (err.message || err.code)) ? String(err.message || err.code) : "خطأ غير معروف";
+      localRow(id, {status: "error", error: msg});
+      ref.update({status: "error", error: msg}).catch(function(){});
+    }).then(function(){
+      busy--;
+      if(busy <= 0){ busy = 0; setConn("on", "التخزين متصل"); }
+    });
+  }
+
+  function removeDoc(r){
+    if(!db) return;
+    if(!window.confirm("حذف «" + (r.name || "المستند") + "» نهائيًا؟")) return;
+    var ref = db.collection("uploads").doc(r.id);
+    var p = Promise.resolve();
+    for(var i = 0; i < (r.chunks || 0); i++){
+      (function(n){
+        p = p.then(function(){ return ref.collection("parts").doc(("000" + n).slice(-4)).delete(); })
+             .catch(function(){});
+      })(i);
+    }
+    p.then(function(){ return ref.delete(); })
+     .then(function(){
+       if(r.assetId && assets) return assets.delete(r.assetId).catch(function(){});
+     })
+     .then(function(){
+       rows = rows.filter(function(x){ return x.id !== r.id; });
+       render(); paintUsage();
+     })
+     .catch(function(err){ alert("تعذّر الحذف: " + (err && err.message ? err.message : "خطأ")); });
+  }
+
+  /* ---------------- أحداث الواجهة ---------------- */
+  el("btn-pick").addEventListener("click", function(){ el("picker").click(); });
+  el("btn-cam").addEventListener("click", function(){ el("camera").click(); });
+  el("picker").addEventListener("change", function(e){ handleFiles(e.target.files); e.target.value = ""; });
+  el("camera").addEventListener("change", function(e){ handleFiles(e.target.files); e.target.value = ""; });
+
+  var drop = el("drop");
+  ["dragenter","dragover"].forEach(function(ev){
+    drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add("hot"); });
+  });
+  ["dragleave","drop"].forEach(function(ev){
+    drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove("hot"); });
+  });
+  drop.addEventListener("drop", function(e){
+    if(e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+  });
+
+  /* ---------------- الاتصال ---------------- */
+  render();
+
+  if(!window.claude || !window.claude.use){
+    setConn("off", "افتح الصفحة من كلود");
+    el("hint").textContent = "هذه الصفحة تحتاج تشغيلها داخل كلود حتى تعمل وظيفة الحفظ.";
+    return;
+  }
+
+  Promise.all([window.claude.use("db"), window.claude.use("assets")]).then(function(pair){
+    db = pair[0]; assets = pair[1];
+    if(!db){
+      setConn("off", "التخزين غير متاح");
+      el("hint").textContent = "تعذّر فتح التخزين في هذا العرض. جرّب إعادة تحميل الصفحة.";
+      return;
+    }
+    setConn("on", "التخزين متصل");
+    el("btn-pick").disabled = false;
+    el("btn-cam").disabled = false;
+    if(!assets){
+      el("hint").textContent = "وضع القراءة فقط للأصول — الملفات ستُنقل بنسخة القراءة دون حفظ الأصل.";
+    }
+    paintUsage();
+
+    unsub = db.collection("uploads").orderBy("createdAt", "desc").limit(300)
+      .onSnapshot(function(snap){
+        var prior = {};
+        rows.forEach(function(r){ prior[r.id] = r; });
+        var live = [];
+        snap.docs.forEach(function(d){
+          var data = d.data() || {};
+          var keep = {id: d.id};
+          for(var k in data){ if(Object.prototype.hasOwnProperty.call(data, k)) keep[k] = data[k]; }
+          // التقدّم حالة محلية لا يحفظها الخادم — احملها معك أثناء الرفع
+          if(keep.status === "uploading" && prior[d.id]) keep.progress = prior[d.id].progress;
+          live.push(keep);
+        });
+        // صفوف بدأت للتو ولم تصل بعد إلى الخادم
+        rows.forEach(function(r){
+          if(r.status === "uploading" && !live.some(function(x){ return x.id === r.id; })) live.unshift(r);
+        });
+        rows = live;
+        render();
+      }, function(e){
+        setConn("off", "انقطع الاتصال: " + (e && e.code ? e.code : "خطأ"));
+      });
+  }).catch(function(){
+    setConn("off", "تعذّر فتح التخزين");
+  });
+})();
+</script>
