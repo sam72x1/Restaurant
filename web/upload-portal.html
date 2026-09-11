@@ -239,7 +239,7 @@
       <button class="btn btn-secondary" id="btn-files" type="button" disabled>تصفّح الملفات</button>
     </div>
     <p class="queue" id="queue" hidden></p>
-    <p class="limit">مع 200 صورة يأخذ جهازك <strong>نحو 4 دقائق</strong> لتجهيزها قبل أن تبدأ الصفحة — الشاشة تبدو واقفة وهذا طبيعي، لا تغلقها</p>
+    <p class="limit">جهازك يفشل في تسليم 200 صورة دفعة واحدة. اختر <strong>25 صورة في المرة</strong> — وكرّر؛ المرفوع سابقًا يُتخطّى تلقائيًا</p>
     <p class="hint" id="hint">لو تجمّد جهازك قبل ظهور أي صف، فالتعليق في مرحلة تحويل الصور داخل النظام نفسه، قبل أن تصل الصفحة. حينها جرّب <strong>«تصفّح الملفات»</strong> فهو يتجاوز تلك المرحلة، أو ارفع من كمبيوتر.</p>
     <input type="file" id="picker" name="picker" multiple accept="image/*" hidden>
     <input type="file" id="pdfpicker" name="pdfpicker" multiple accept="application/pdf,.pdf" hidden>
@@ -434,6 +434,30 @@
   }
 
   var wakeLock = null, active = {}, batchRunning = false;
+  var pickerOpenedAt = 0, pickerWatch = null;
+
+  function armPickerWatch(){
+    pickerOpenedAt = Date.now();
+    if(pickerWatch){ clearTimeout(pickerWatch); pickerWatch = null; }
+  }
+  function disarmPickerWatch(){
+    pickerOpenedAt = 0;
+    if(pickerWatch){ clearTimeout(pickerWatch); pickerWatch = null; }
+  }
+  // عاد المستخدم من المنتقي ولم يصل أي ملف: المتصفح استسلم عند التحويل
+  function checkPickerDelivered(){
+    if(!pickerOpenedAt || pickerWatch) return;
+    pickerWatch = setTimeout(function(){
+      pickerWatch = null;
+      if(!pickerOpenedAt) return;
+      var secs = Math.round((Date.now() - pickerOpenedAt) / 1000);
+      pickerOpenedAt = 0;
+      log("!! المتصفح لم يسلّم أي ملف بعد " + secs + " ثانية من فتح المنتقي");
+      openDiag();
+      banner("متصفح جهازك لم يسلّم الصور للصفحة — استسلم وهو يحوّلها، ولا يمكن لأي كود " +
+             "تجاوز هذه المرحلة. جرّب اختيار 25 صورة فقط في المرة، أو ارفع من كمبيوتر.", true);
+    }, 6000);
+  }
   var wakeTries = 0, wakeWarned = false;
   function acquireWake(){
     if(wakeLock || !navigator.wakeLock || !navigator.wakeLock.request) return;
@@ -471,6 +495,7 @@
       log("• خرجت الصفحة للخلفية" + (busy > 0 ? " أثناء الرفع — سيتجمّد حتى تعود" : ""));
     } else {
       log("• عادت الصفحة للمقدمة");
+      checkPickerDelivered();
       if(busy > 0){ wakeTries = 0; acquireWake(); }
       else { sweepStalled(); }
     }
@@ -1070,7 +1095,7 @@
   }
 
   /* ---------------- أحداث الواجهة ---------------- */
-  el("btn-pick").addEventListener("click", function(){ log("== ضغط: صور من الجهاز"); el("picker").click(); });
+  el("btn-pick").addEventListener("click", function(){ log("== ضغط: صور من الجهاز"); armPickerWatch(); el("picker").click(); });
   el("btn-pdf").addEventListener("click", function(){ log("== ضغط: ملف PDF"); el("pdfpicker").click(); });
   el("btn-cam").addEventListener("click", function(){ log("== ضغط: الكاميرا"); el("camera").click(); });
 
@@ -1088,14 +1113,16 @@
     log("== ضغط: إعادة رفع الفاشلة");
     banner("اختر الملفات المذكورة أعلاه. ما نجح سابقًا سيُتخطّى تلقائيًا، " +
            "والصف الفاشل يُحذف بعد نجاح بديله.");
+    armPickerWatch();
     el("picker").click();
   });
 
-  el("btn-files").addEventListener("click", function(){ log("== ضغط: تصفّح الملفات"); el("filepicker").click(); });
+  el("btn-files").addEventListener("click", function(){ log("== ضغط: تصفّح الملفات"); armPickerWatch(); el("filepicker").click(); });
 
   ["picker","pdfpicker","camera","filepicker"].forEach(function(id){
     var input = el(id);
     input.addEventListener("change", function(){
+      disarmPickerWatch();
       var files = Array.prototype.slice.call(input.files || []);
       var bytes = 0;
       files.forEach(function(f){ bytes += f.size || 0; });
