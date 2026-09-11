@@ -110,6 +110,14 @@
   .btn-primary:hover:not(:disabled){ filter:brightness(1.08); }
   .btn-secondary:hover:not(:disabled){ border-color:var(--accent-line); }
   .hint{ margin:12px 0 0; font-size:12px; color:var(--ink-3); }
+  .hint strong{ color:var(--ink-2); font-weight:600; }
+  .queue{ margin:14px 0 0; font-size:13px; font-weight:500; color:var(--accent);
+          font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+  #banner{ border:1px solid var(--warn-line); background:var(--warn-soft); color:var(--warn);
+           border-radius:var(--r); padding:11px 14px; margin:18px 0 0; font-size:13.5px; line-height:1.6; }
+  #banner.bad{ border-color:var(--danger-line); background:var(--danger-soft); color:var(--danger); }
+  #banner button{ border:0; background:none; color:inherit; font:inherit; font-weight:600;
+                  cursor:pointer; text-decoration:underline; padding:0; margin-inline-start:8px; }
 
   /* ---------- القائمة ---------- */
   .list-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px;
@@ -172,6 +180,8 @@
     <p class="lede">صوّر الفاتورة أو التقرير، اختر تصنيفه، وارفعه. الملف يُحفظ هنا بجودته الأصلية، وتُجهَّز نسخة يقرأها كلود في المحادثة.</p>
   </header>
 
+  <div id="banner" hidden></div>
+
   <dl class="meters">
     <div class="meter"><dt>مستند مرفوع</dt><dd class="num" id="m-count">0</dd></div>
     <div class="meter"><dt>بانتظار كلود</dt><dd class="num" id="m-pending">0</dd></div>
@@ -193,10 +203,13 @@
     <p>صور، أو ملفات PDF</p>
     <div class="actions">
       <button class="btn btn-primary" id="btn-cam" type="button" disabled>التقاط بالكاميرا</button>
-      <button class="btn btn-secondary" id="btn-pick" type="button" disabled>اختيار من الجهاز</button>
+      <button class="btn btn-secondary" id="btn-pick" type="button" disabled>صور من الجهاز</button>
+      <button class="btn btn-secondary" id="btn-pdf" type="button" disabled>ملف PDF</button>
     </div>
-    <p class="hint" id="hint">الصفحة خاصة بك — ولا يمكن مشاركتها علنًا لأنها تحفظ بيانات.</p>
-    <input type="file" id="picker" name="picker" multiple accept="image/*,application/pdf" hidden>
+    <p class="queue" id="queue" hidden></p>
+    <p class="hint" id="hint">اختر <strong>10 إلى 15 صورة</strong> في المرة الواحدة. الاختيار الكبير يُوقف متصفح الجوال قبل أن تصل الصور للصفحة.</p>
+    <input type="file" id="picker" name="picker" multiple accept="image/*" hidden>
+    <input type="file" id="pdfpicker" name="pdfpicker" multiple accept="application/pdf,.pdf" hidden>
     <input type="file" id="camera" name="camera" accept="image/*" capture="environment" hidden>
   </div>
 
@@ -267,6 +280,40 @@
   function errorText(code){ return ERRORS[code] || String(code); }
 
   var el = function(id){ return document.getElementById(id); };
+
+  function banner(msg, bad){
+    var b = el("banner");
+    b.textContent = msg;
+    b.className = bad ? "bad" : "";
+    var x = document.createElement("button");
+    x.type = "button"; x.textContent = "إخفاء";
+    x.addEventListener("click", function(){ b.hidden = true; });
+    b.appendChild(x);
+    b.hidden = false;
+  }
+  window.addEventListener("error", function(e){
+    banner("توقف غير متوقع: " + (e.message || "خطأ") + " — أعد تحميل الصفحة وجرّب دفعة أصغر.", true);
+  });
+  window.addEventListener("unhandledrejection", function(e){
+    var r = e.reason || {};
+    banner("فشل غير معالج: " + errorText(r.code || r.message || "خطأ"), true);
+  });
+
+  // أخطاء عابرة تستحق إعادة محاولة — الرفع الكثيف يصطدم بحدود المعدل
+  var SOFT = ["rate_limited","resource_exhausted","store_unavailable","unavailable","upstream_error"];
+  function withRetry(fn){
+    function attempt(n){
+      return fn().catch(function(err){
+        var code = err && err.code;
+        if(n < 4 && SOFT.indexOf(code) !== -1){
+          return new Promise(function(r){ setTimeout(r, 500 * Math.pow(2, n) + Math.random() * 400); })
+            .then(function(){ return attempt(n + 1); });
+        }
+        throw err;
+      });
+    }
+    return attempt(0);
+  }
   var db = null, assets = null, unsub = null, rows = [], busy = 0;
 
   /* ---------------- بناء الواجهة ---------------- */
@@ -423,8 +470,15 @@
     });
   }
 
+  function looksLikeImage(file){
+    var t = (file.type || "").toLowerCase();
+    if(t.indexOf("image/") === 0) return true;
+    if(t === "application/pdf") return false;
+    return /\.(jpe?g|png|gif|webp|heic|heif|bmp|tiff?)$/i.test(file.name || "");
+  }
+
   function makeReadable(file){
-    if(typeof createImageBitmap !== "function") return Promise.resolve(file);
+    if(typeof createImageBitmap !== "function") return Promise.resolve(null);
     var bmpP;
     try { bmpP = createImageBitmap(file, {imageOrientation:"from-image"}); }
     catch(err){ bmpP = createImageBitmap(file); }
@@ -471,17 +525,38 @@
     render();
   }
 
+  function setQueue(done, total){
+    var q = el("queue");
+    if(!total){ q.hidden = true; return; }
+    q.hidden = false;
+    q.textContent = "جارٍ الرفع: " + done + " من " + total;
+  }
+
   function handleFiles(fileList){
     var files = Array.prototype.slice.call(fileList || []);
-    if(!files.length) return;
-    if(!db){ alert("التخزين غير جاهز بعد. انتظر لحظة ثم أعد المحاولة."); return; }
+    if(!files.length) return Promise.resolve();
+    if(!db){
+      banner("التخزين لم يفتح بعد. انتظر حتى تصبح النقطة خضراء ثم أعد المحاولة.", true);
+      return Promise.resolve();
+    }
+    if(files.length > 15){
+      banner("اخترت " + files.length + " ملفًا. سترفع واحدًا تلو الآخر وقد يتوقف متصفح الجوال في المنتصف — " +
+             "الأفضل 10 إلى 15 في المرة. ما ينجح منها يبقى محفوظًا.");
+    }
     var cat = currentCat();
     var note = el("note").value.trim();
     var chain = Promise.resolve();
+    var done = 0;
+    setQueue(0, files.length);
     files.forEach(function(f){
-      chain = chain.then(function(){ return uploadOne(f, cat, note); });
+      chain = chain.then(function(){
+        return uploadOne(f, cat, note).then(function(){
+          setQueue(++done, files.length);
+        });
+      });
     });
-    chain.then(function(){
+    return chain.then(function(){
+      setQueue(0, 0);
       el("note").value = "";
       paintUsage();
     });
@@ -490,7 +565,7 @@
   function uploadOne(file, category, note){
     var id = mintId();
     var ref = db.collection("uploads").doc(id);
-    var isImage = (file.type || "").indexOf("image/") === 0;
+    var isImage = looksLikeImage(file);
     var base = {
       name: file.name || "مستند",
       category: category,
@@ -505,9 +580,14 @@
     setConn("on", "جارٍ الرفع…");
     localRow(id, Object.assign({}, base, {progress: 0.05}));
 
-    return ref.set(base).then(function(){
-      return isImage ? makeReadable(file).catch(function(){ return file; })
-                     : Promise.resolve(file.size <= RAW_MAX ? file : null);
+    return withRetry(function(){ return ref.set(base); }).then(function(){
+      if(!isImage) return file.size <= RAW_MAX ? file : null;
+      // التحويل عبر الرسم قد يفشل على بعض صيغ الجوال — ارجع للملف الخام حينها
+      return makeReadable(file).then(function(out){
+        return out || (file.size <= RAW_MAX ? file : null);
+      }).catch(function(){
+        return file.size <= RAW_MAX ? file : null;
+      });
     }).then(function(readable){
       localRow(id, {progress: 0.25});
       // 1) حفظ النسخة الأصلية كأصل دائم
@@ -526,10 +606,10 @@
     }).then(function(ctx){
       localRow(id, {progress: 0.4, assetId: ctx.assetId});
       if(!ctx.readable){
-        return ref.update({
+        return withRetry(function(){ return ref.update({
           status: "stored", assetId: ctx.assetId, chunks: 0, transfer: "asset_only",
           error: "أكبر من حد النقل — محفوظ كأصل فقط"
-        }).then(function(){ return null; });
+        }); }).then(function(){ return null; });
       }
       return toBase64(ctx.readable).then(function(b64){
         var parts = [];
@@ -538,13 +618,15 @@
         var p = Promise.resolve();
         parts.forEach(function(txt, i){
           p = p.then(function(){
-            return ref.collection("parts").doc(("000" + i).slice(-4)).set({i: i, b64: txt});
+            return withRetry(function(){
+              return ref.collection("parts").doc(("000" + i).slice(-4)).set({i: i, b64: txt});
+            });
           }).then(function(){
             localRow(id, {progress: 0.4 + 0.55 * (i + 1) / parts.length});
           });
         });
         return p.then(function(){
-          return ref.update({
+          return withRetry(function(){ return ref.update({
             status: "stored",
             assetId: ctx.assetId,
             chunks: parts.length,
@@ -552,14 +634,15 @@
             transferMime: ctx.readable.type || file.type || "application/octet-stream",
             transferSize: ctx.readable.size,
             b64Length: b64.length
-          });
+          }); });
         });
       });
     }).then(function(){
       localRow(id, {status: "stored", progress: 1});
     }).catch(function(err){
-      var msg = (err && (err.message || err.code)) ? String(err.message || err.code) : "خطأ غير معروف";
+      var msg = (err && (err.code || err.message)) ? String(err.code || err.message) : "خطأ غير معروف";
       localRow(id, {status: "error", error: msg});
+      banner("فشل «" + (file.name || "ملف") + "»: " + errorText(msg), true);
       ref.update({status: "error", error: msg}).catch(function(){});
     }).then(function(){
       busy--;
@@ -591,9 +674,20 @@
 
   /* ---------------- أحداث الواجهة ---------------- */
   el("btn-pick").addEventListener("click", function(){ el("picker").click(); });
+  el("btn-pdf").addEventListener("click", function(){ el("pdfpicker").click(); });
   el("btn-cam").addEventListener("click", function(){ el("camera").click(); });
-  el("picker").addEventListener("change", function(e){ handleFiles(e.target.files); e.target.value = ""; });
-  el("camera").addEventListener("change", function(e){ handleFiles(e.target.files); e.target.value = ""; });
+
+  // iOS يُبطل مراجع الملفات إذا صُفّر الحقل قبل قراءتها — صفّره بعد انتهاء المعالجة
+  ["picker","pdfpicker","camera"].forEach(function(id){
+    var input = el(id);
+    input.addEventListener("change", function(){
+      var files = Array.prototype.slice.call(input.files || []);
+      if(!files.length) return;
+      handleFiles(files).then(function(){
+        try { input.value = ""; } catch(err){}
+      });
+    });
+  });
 
   var drop = el("drop");
   ["dragenter","dragover"].forEach(function(ev){
@@ -624,6 +718,7 @@
     }
     setConn("on", "التخزين متصل");
     el("btn-pick").disabled = false;
+    el("btn-pdf").disabled = false;
     el("btn-cam").disabled = false;
     if(!assets){
       el("hint").textContent = "وضع القراءة فقط للأصول — الملفات ستُنقل بنسخة القراءة دون حفظ الأصل.";
