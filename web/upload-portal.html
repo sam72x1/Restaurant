@@ -289,11 +289,12 @@
 
   // حدود المنصة: مستند قاعدة البيانات 256 كيلوبايت، والأصل 20 ميجابايت.
   var CHUNK = 230000;              // حروف base64 لكل جزء
-  var TARGET_B64 = 1250000;        // حجم نسخة القراءة المستهدف للصور
+  var TARGET_B64 = 700000;         // حجم نسخة القراءة المستهدف للصور
   var RAW_MAX = 4 * 1024 * 1024;   // أقصى حجم لملف غير صورة يُنقل كما هو
   var ASSET_MAX = 20 * 1024 * 1024;
   var ASSET_TYPES = ["image/png","image/jpeg","image/gif","image/webp","application/pdf"];
-  var LADDER = [[2000,0.85],[1700,0.80],[1400,0.72],[1150,0.65],[950,0.60]];
+  var LADDER = [[1800,0.80],[1700,0.75],[1500,0.68],[1300,0.62],[1100,0.55]];
+  var THUMB = [320, 0.6];          // مصغّرة العرض فقط — لا تُقرأ من الخارج
 
   var ERRORS = {
     unsupported_type:"نوع ملف غير مدعوم — أرسله كـ JPG أو PDF",
@@ -607,6 +608,17 @@
     return /\.(jpe?g|png|gif|webp|heic|heif|bmp|tiff?)$/i.test(file.name || "");
   }
 
+  // مصغّرة عرض صغيرة (بضعة كيلوبايتات) بدل رفع ميجابايتات لا تُقرأ
+  function makeThumb(src){
+    if(typeof createImageBitmap !== "function" || !src) return Promise.resolve(null);
+    return createImageBitmap(src).then(function(bmp){
+      return drawJpeg(bmp, THUMB[0], THUMB[1]).then(function(b){
+        if(bmp.close) bmp.close();
+        return b;
+      });
+    }).catch(function(){ return null; });
+  }
+
   function makeReadable(file){
     if(typeof createImageBitmap !== "function") return Promise.resolve(null);
     var bmpP;
@@ -731,17 +743,16 @@
       });
     }).then(function(readable){
       localRow(id, {progress: 0.2});
-      var forAsset = null, assetType = null;
-      if(ASSET_TYPES.indexOf(file.type) !== -1 && file.size <= ASSET_MAX){
-        forAsset = file; assetType = file.type;
-      } else if(readable && readable !== file){
-        forAsset = readable; assetType = "image/jpeg";
-      }
-      // حفظ الأصل وترميز نسخة النقل يجريان معًا — لا داعي لانتظار أحدهما
-      var assetP = forAsset && assets
-        ? withTimeout(assets.upload(forAsset, assetType ? {type: assetType} : undefined), 120000, "حفظ الأصل")
-                .then(function(r){ log("   ✓ حُفظ الأصل"); return r.id; })
-                .catch(function(e){ log("   ! تعذّر حفظ الأصل (" + (e && e.code ? e.code : "?") + ")"); return null; })
+      // الأصل الكامل لا يُقرأ من خارج الصفحة، فرفعه هدر. نرفع مصغّرة
+      // للعرض فقط، والنسخة الكاملة تصل عبر الأجزاء.
+      var converted = readable && readable !== file;
+      var assetP = (assets && converted)
+        ? withTimeout(makeThumb(readable), 8000, "المصغّرة")
+            .then(function(tb){
+              if(!tb) return null;
+              return assets.upload(tb, {type: "image/jpeg"}).then(function(r){ return r.id; });
+            })
+            .catch(function(e){ log("   • بلا مصغّرة (" + (e && e.code ? e.code : "?") + ")"); return null; })
         : Promise.resolve(null);
       var b64P = readable ? toBase64(readable) : Promise.resolve(null);
       return Promise.all([assetP, b64P]).then(function(out){
