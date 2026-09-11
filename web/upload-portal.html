@@ -333,6 +333,45 @@
     });
   }
 
+  var wakeLock = null, active = {};
+  function acquireWake(){
+    if(wakeLock || !navigator.wakeLock || !navigator.wakeLock.request) return;
+    navigator.wakeLock.request("screen").then(function(w){
+      wakeLock = w;
+      log("• قفل الإيقاظ مفعّل — الشاشة لن تنطفئ أثناء الرفع");
+      w.addEventListener("release", function(){ wakeLock = null; });
+    }).catch(function(e){ log("• تعذّر قفل الإيقاظ: " + (e && e.name ? e.name : "?")); });
+  }
+  function releaseWake(){
+    if(!wakeLock) return;
+    try { wakeLock.release(); } catch(e){}
+    wakeLock = null;
+  }
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden){
+      log("• خرجت الصفحة للخلفية" + (busy > 0 ? " أثناء الرفع — سيتجمّد حتى تعود" : ""));
+    } else {
+      log("• عادت الصفحة للمقدمة");
+      if(busy > 0){ acquireWake(); }
+      else { sweepStalled(); }
+    }
+  });
+
+  // صف عالق لأن الصفحة تجمّدت: لا تتركه معلّقًا إلى الأبد
+  function sweepStalled(){
+    if(!db) return;
+    var cutoff = Date.now() - 120000;
+    rows.forEach(function(r){
+      if(r.status !== "uploading" || active[r.id]) return;
+      var started = new Date(r.createdAt || 0).getTime();
+      if(!started || started > cutoff) return;
+      log("• صف عالق: " + (r.name || r.id) + " — وُسم كفاشل");
+      db.collection("uploads").doc(r.id)
+        .update({status: "error", error: "توقف لأن الصفحة غادرت المقدمة — أعد رفعه"})
+        .catch(function(){});
+    });
+  }
+
   function banner(msg, bad){
     var b = el("banner");
     b.textContent = msg;
@@ -586,7 +625,7 @@
     var q = el("queue");
     if(!total){ q.hidden = true; return; }
     q.hidden = false;
-    q.textContent = "جارٍ الرفع: " + done + " من " + total;
+    q.textContent = "جارٍ الرفع: " + done + " من " + total + " — لا تخرج من الصفحة";
   }
 
   function handleFiles(fileList){
@@ -606,6 +645,7 @@
     var note = el("note").value.trim();
     var chain = Promise.resolve();
     var done = 0;
+    acquireWake();
     setQueue(0, files.length);
     files.forEach(function(f){
       chain = chain.then(function(){
@@ -616,8 +656,10 @@
     });
     return chain.then(function(){
       setQueue(0, 0);
+      releaseWake();
       el("note").value = "";
       paintUsage();
+      banner("انتهت الدفعة. قل «رفعت» في المحادثة، أو تابع بدفعة جديدة.");
     });
   }
 
@@ -636,6 +678,7 @@
       chunks: 0
     };
     busy++;
+    active[id] = true;
     log("» " + (file.name || "بلا اسم") + " | نوع=" + (file.type || "فارغ") +
         " | حجم=" + Math.round(file.size / 1024) + "ك.ب | صورة=" + (isImage ? "نعم" : "لا"));
     setConn("on", "جارٍ الرفع…");
@@ -714,7 +757,8 @@
       ref.update({status: "error", error: msg}).catch(function(){});
     }).then(function(){
       busy--;
-      if(busy <= 0){ busy = 0; setConn("on", "التخزين متصل"); }
+      delete active[id];
+      if(busy <= 0){ busy = 0; setConn("on", "التخزين متصل"); releaseWake(); }
     });
   }
 
@@ -832,6 +876,7 @@
         });
         rows = live;
         render();
+        if(busy === 0) sweepStalled();
       }, function(e){
         setConn("off", "انقطع الاتصال: " + (e && e.code ? e.code : "خطأ"));
       });
