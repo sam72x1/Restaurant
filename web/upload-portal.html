@@ -486,87 +486,133 @@
   }
 
   /* ---------------- الرسم ---------------- */
+  // بناء تفاضلي: صف واحد لكل مستند يُنشأ مرة ويُحدَّث في مكانه.
+  // البناء الكامل عند كل تحديث كان يجعل التكلفة تربيعية ويجمّد الجهاز.
+  var MAX_ROWS = 60;
+  var rowEls = {}, renderPending = false;
+  var raf = window.requestAnimationFrame
+    ? window.requestAnimationFrame.bind(window)
+    : function(f){ return setTimeout(f, 16); };
+
   function render(){
+    if(renderPending) return;
+    renderPending = true;
+    raf(function(){ renderPending = false; renderNow(); });
+  }
+
+  function buildRow(){
+    var li = document.createElement("li");
+    var th = document.createElement("div"); th.className = "thumb";
+    var main = document.createElement("div"); main.className = "doc-main";
+    var nm = document.createElement("div"); nm.className = "doc-name";
+    var nt = document.createElement("div"); nt.className = "doc-note";
+    var meta = document.createElement("div"); meta.className = "doc-meta";
+    main.appendChild(nm); main.appendChild(nt); main.appendChild(meta);
+    var side = document.createElement("div"); side.className = "doc-side";
+    li.appendChild(th); li.appendChild(main); li.appendChild(side);
+    return {li: li, th: th, nm: nm, nt: nt, meta: meta, side: side, sig: null, thumbSig: null};
+  }
+
+  function tag(text, ltr){
+    var s = document.createElement("span");
+    s.className = ltr ? "tag num" : "tag";
+    if(ltr) s.setAttribute("dir", "ltr");
+    s.textContent = text;
+    return s;
+  }
+
+  function paintRow(cell, r){
+    // بصمة الحالة: لا نلمس DOM ما لم يتغيّر شيء فعلًا
+    var sig = [r.status, r.progress, r.name, r.note, r.category,
+               r.originalSize, r.createdAt, r.error].join("\u0001");
+    if(cell.sig === sig) return;
+    cell.sig = sig;
+
+    cell.li.className = "doc" + (r.status === "error" ? " is-error" : "");
+
+    var thumbSig = (r.assetId || "") + "|" + (r.mime || "");
+    if(cell.thumbSig !== thumbSig){
+      cell.thumbSig = thumbSig;
+      cell.th.textContent = "";
+      if(r.assetId){
+        var img = document.createElement("img");
+        img.src = "/_blob/" + r.assetId; img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+        cell.th.appendChild(img);
+      } else {
+        cell.th.textContent = (r.mime === "application/pdf") ? "PDF" : "ملف";
+      }
+    }
+
+    cell.nm.textContent = r.name || "بدون اسم";
+    cell.nt.textContent = r.note || "";
+    cell.nt.hidden = !r.note;
+
+    cell.meta.textContent = "";
+    var st = STATE_LABEL[r.status] || STATE_LABEL.stored;
+    var badge = document.createElement("span");
+    badge.className = "state " + st[0]; badge.textContent = st[1];
+    cell.meta.appendChild(badge);
+    cell.meta.appendChild(tag(CAT_LABEL[r.category] || "أخرى"));
+    cell.meta.appendChild(tag(fmtBytes(r.originalSize)));
+    var when = fmtWhen(r.createdAt);
+    if(when) cell.meta.appendChild(tag(when, true));
+    if(r.error) cell.meta.appendChild(tag(errorText(r.error)));
+
+    cell.side.textContent = "";
+    if(r.status === "uploading"){
+      var bar = document.createElement("div"); bar.className = "bar";
+      var fill = document.createElement("i");
+      fill.style.width = Math.round((r.progress || 0) * 100) + "%";
+      bar.appendChild(fill); cell.side.appendChild(bar);
+    } else {
+      var del = document.createElement("button");
+      del.type = "button"; del.className = "kill"; del.textContent = "حذف";
+      del.setAttribute("aria-label", "حذف " + (r.name || "المستند"));
+      del.addEventListener("click", function(){ removeDoc(r); });
+      cell.side.appendChild(del);
+    }
+  }
+
+  function renderNow(){
     var list = el("docs"), empty = el("empty");
-    list.textContent = "";
-    if(!rows.length){ empty.hidden = false; el("list-note").textContent = ""; paintMeters(); return; }
+    if(!rows.length){
+      list.textContent = ""; rowEls = {};
+      empty.hidden = false; el("list-note").textContent = "";
+      paintMeters(); return;
+    }
     empty.hidden = true;
 
-    rows.forEach(function(r){
-      var li = document.createElement("li");
-      li.className = "doc" + (r.status === "error" ? " is-error" : "");
+    var visible = rows.slice(0, MAX_ROWS), keep = {};
+    visible.forEach(function(r){ keep[r.id] = true; });
 
-      var th = document.createElement("div");
-      th.className = "thumb";
-      if(r.assetId && r.mime && r.mime.indexOf("image/") === 0){
-        var img = document.createElement("img");
-        img.src = "/_blob/" + r.assetId; img.alt = ""; img.loading = "lazy";
-        th.appendChild(img);
-      } else {
-        th.textContent = (r.mime === "application/pdf") ? "PDF" : "ملف";
+    for(var id in rowEls){
+      if(!keep[id]){
+        if(rowEls[id].li.parentNode) list.removeChild(rowEls[id].li);
+        delete rowEls[id];
       }
-      li.appendChild(th);
+    }
 
-      var main = document.createElement("div");
-      main.className = "doc-main";
-      var nm = document.createElement("div");
-      nm.className = "doc-name"; nm.textContent = r.name || "بدون اسم";
-      main.appendChild(nm);
-      if(r.note){
-        var nt = document.createElement("div");
-        nt.className = "doc-note"; nt.textContent = r.note;
-        main.appendChild(nt);
-      }
-      var meta = document.createElement("div");
-      meta.className = "doc-meta";
-      var st = STATE_LABEL[r.status] || STATE_LABEL.stored;
-      var badge = document.createElement("span");
-      badge.className = "state " + st[0]; badge.textContent = st[1];
-      meta.appendChild(badge);
-      [CAT_LABEL[r.category] || "أخرى", fmtBytes(r.originalSize)].forEach(function(t){
-        if(!t) return;
-        var s = document.createElement("span");
-        s.className = "tag"; s.textContent = t;
-        meta.appendChild(s);
-      });
-      var when = fmtWhen(r.createdAt);
-      if(when){
-        var w = document.createElement("span");
-        w.className = "tag num"; w.setAttribute("dir", "ltr"); w.textContent = when;
-        meta.appendChild(w);
-      }
-      if(r.error){
-        var e = document.createElement("span");
-        e.className = "tag"; e.textContent = errorText(r.error);
-        meta.appendChild(e);
-      }
-      main.appendChild(meta);
-      li.appendChild(main);
-
-      var side = document.createElement("div");
-      side.className = "doc-side";
-      if(r.status === "uploading"){
-        var bar = document.createElement("div");
-        bar.className = "bar";
-        var fill = document.createElement("i");
-        fill.style.width = Math.round((r.progress || 0) * 100) + "%";
-        bar.appendChild(fill); side.appendChild(bar);
-      } else {
-        var del = document.createElement("button");
-        del.type = "button"; del.className = "kill"; del.textContent = "حذف";
-        del.setAttribute("aria-label", "حذف " + (r.name || "المستند"));
-        del.addEventListener("click", function(){ removeDoc(r); });
-        side.appendChild(del);
-      }
-      li.appendChild(side);
-      list.appendChild(li);
+    var prev = null;
+    visible.forEach(function(r){
+      var cell = rowEls[r.id];
+      if(!cell){ cell = rowEls[r.id] = buildRow(); }
+      paintRow(cell, r);
+      // ضع الصف في موضعه فقط إذا كان الترتيب قد اختلّ
+      var want = prev ? prev.nextSibling : list.firstChild;
+      if(cell.li !== want) list.insertBefore(cell.li, want);
+      prev = cell.li;
     });
 
-    var pending = rows.filter(function(r){ return r.status === "stored"; }).length;
-    var bad = rows.filter(function(r){ return r.status === "error"; }).length;
-    el("list-note").textContent = pending ? (pending + " بانتظار السحب")
-                                : bad ? (bad + " فشل — أعد الرفع")
-                                : "كل شيء وصل";
+    var pending = 0, bad = 0;
+    rows.forEach(function(r){
+      if(r.status === "stored") pending++;
+      else if(r.status === "error") bad++;
+    });
+    var note = pending ? (pending + " بانتظار السحب")
+             : bad ? (bad + " فشل — أعد الرفع")
+             : "كل شيء وصل";
+    if(rows.length > MAX_ROWS) note += " · يُعرض أحدث " + MAX_ROWS + " من " + rows.length;
+    el("list-note").textContent = note;
     paintMeters();
   }
 
@@ -929,7 +975,7 @@
     }
     paintUsage();
 
-    unsub = db.collection("uploads").orderBy("createdAt", "desc").limit(300)
+    unsub = db.collection("uploads").orderBy("createdAt", "desc").limit(1000)
       .onSnapshot(function(snap){
         var prior = {};
         rows.forEach(function(r){ prior[r.id] = r; });
