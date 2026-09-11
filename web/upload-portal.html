@@ -227,7 +227,7 @@
       <button class="btn btn-secondary" id="btn-files" type="button" disabled>تصفّح الملفات</button>
     </div>
     <p class="queue" id="queue" hidden></p>
-    <p class="limit">لا حد على عدد الصور — أعد اختيار الدفعة كاملة متى انقطعت، وسيرفع الناقص فقط</p>
+    <p class="limit">مع 200 صورة يأخذ جهازك <strong>نحو 4 دقائق</strong> لتجهيزها قبل أن تبدأ الصفحة — الشاشة تبدو واقفة وهذا طبيعي، لا تغلقها</p>
     <p class="hint" id="hint">لو تجمّد جهازك قبل ظهور أي صف، فالتعليق في مرحلة تحويل الصور داخل النظام نفسه، قبل أن تصل الصفحة. حينها جرّب <strong>«تصفّح الملفات»</strong> فهو يتجاوز تلك المرحلة، أو ارفع من كمبيوتر.</p>
     <input type="file" id="picker" name="picker" multiple accept="image/*" hidden>
     <input type="file" id="pdfpicker" name="pdfpicker" multiple accept="application/pdf,.pdf" hidden>
@@ -416,15 +416,34 @@
   }
 
   var wakeLock = null, active = {}, batchRunning = false;
+  var wakeTries = 0, wakeWarned = false;
   function acquireWake(){
     if(wakeLock || !navigator.wakeLock || !navigator.wakeLock.request) return;
+    if(document.hidden) return;                 // الطلب مرفوض حتمًا والصفحة مخفية
     navigator.wakeLock.request("screen").then(function(w){
-      wakeLock = w;
+      wakeLock = w; wakeTries = 0;
       log("• قفل الإيقاظ مفعّل — الشاشة لن تنطفئ أثناء الرفع");
-      w.addEventListener("release", function(){ wakeLock = null; });
-    }).catch(function(e){ log("• تعذّر قفل الإيقاظ: " + (e && e.name ? e.name : "?")); });
+      w.addEventListener("release", function(){
+        wakeLock = null;
+        if(busy > 0) setTimeout(acquireWake, 800);   // استعده إن سُحب أثناء الرفع
+      });
+    }).catch(function(e){
+      // iOS يرفض الطلب لحظة إغلاق منتقي الصور؛ الصفحة لم تصر مرئية بعد.
+      wakeTries++;
+      if(busy > 0 && wakeTries <= 8){
+        setTimeout(acquireWake, 1200 * Math.min(wakeTries, 4));
+        return;
+      }
+      log("• تعذّر قفل الإيقاظ: " + (e && e.name ? e.name : "?"));
+      if(!wakeWarned){
+        wakeWarned = true;
+        banner("جهازك رفض إبقاء الشاشة مضاءة. اضبط: الإعدادات ← شاشة العرض والسطوع ← " +
+               "القفل التلقائي ← أبدًا، قبل الدفعات الكبيرة — وإلا تجمّد الرفع عند قفل الشاشة.", true);
+      }
+    });
   }
   function releaseWake(){
+    wakeTries = 0;
     if(!wakeLock) return;
     try { wakeLock.release(); } catch(e){}
     wakeLock = null;
@@ -434,7 +453,7 @@
       log("• خرجت الصفحة للخلفية" + (busy > 0 ? " أثناء الرفع — سيتجمّد حتى تعود" : ""));
     } else {
       log("• عادت الصفحة للمقدمة");
-      if(busy > 0){ acquireWake(); }
+      if(busy > 0){ wakeTries = 0; acquireWake(); }
       else { sweepStalled(); }
     }
   });
@@ -824,18 +843,24 @@
     }
     var cat = currentCat();
     var note = el("note").value.trim();
-    var chain = Promise.resolve();
-    var done = 0;
+    var done = 0, next = 0;
     acquireWake();
     batchStart = Date.now();
     setQueue(0, files.length);
-    files.forEach(function(f){
-      chain = chain.then(function(){
-        return uploadOne(f, cat, note).then(function(){
-          setQueue(++done, files.length);
-        });
+    // ملفان معًا: ضغط أحدهما على المعالج يتداخل مع كتابة الآخر على الشبكة،
+    // وهي أبطأ مرحلة على الجهاز الحقيقي (نحو أربع ثوانٍ لكل ملف).
+    function lane(){
+      if(next >= files.length) return Promise.resolve();
+      var f = files[next++];
+      return uploadOne(f, cat, note).then(function(){
+        setQueue(++done, files.length);
+        return lane();
       });
-    });
+    }
+    var laneCount = Math.min(2, files.length);
+    var lanes = [];
+    for(var li = 0; li < laneCount; li++) lanes.push(lane());
+    var chain = Promise.all(lanes);
     batchRunning = true;
     function endBatch(){
       batchRunning = false;
