@@ -1,0 +1,143 @@
+{
+  "_تحذير": "ملف تجريبي لاختبار المحرك فقط. الأرقام هنا مُختلقة ولا علاقة لها بأي صفقة حقيقية. لا تستخدمه في اتخاذ أي قرار.",
+  "meta": {
+    "project_name": "مثال توضيحي (أرقام مُختلقة)",
+    "location": "—",
+    "concept": "مطعم وجبات سريعة"
+  },
+  "revenue": {
+    "operating_days_per_month": 30,
+    "channels": [
+      {
+        "name": "الصالة",
+        "orders_per_day": {
+          "v": 60,
+          "src": "verified",
+          "ref": "data/pos-reports/"
+        },
+        "avg_ticket_sar": {
+          "v": 38,
+          "src": "verified",
+          "ref": "data/pos-reports/"
+        },
+        "commission_pct": 0
+      },
+      {
+        "name": "السفري",
+        "orders_per_day": {
+          "v": 25,
+          "src": "verified",
+          "ref": "data/pos-reports/"
+        },
+        "avg_ticket_sar": {
+          "v": 32,
+          "src": "verified",
+          "ref": "data/pos-reports/"
+        },
+        "commission_pct": 0
+      },
+      {
+        "name": "تطبيقات التوصيل",
+        "orders_per_day": {
+          "v": 40,
+          "src": "claimed",
+          "ref": ""
+        },
+        "avg_ticket_sar": {
+          "v": 45,
+          "src": "claimed",
+          "ref": ""
+        },
+        "commission_pct": {
+          "v": 22,
+          "src": "verified",
+          "ref": "data/contracts/"
+        }
+      }
+    ]
+  },
+  "cogs": {
+    "food_cost_pct": {
+      "v": 32,
+      "src": "verified",
+      "ref": "data/invoices/"
+    },
+    "packaging_cost_pct": 3
+  },
+  "staff": [
+    {
+      "role": "مدير فرع",
+      "count": 1,
+      "salary_sar": 7000,
+      "is_saudi": true
+    },
+    {
+      "role": "شيف",
+      "count": 2,
+      "salary_sar": 4500,
+      "is_saudi": false,
+      "housing_sar": 600,
+      "gov_fees_monthly_sar": 800
+    },
+    {
+      "role": "مساعد مطبخ",
+      "count": 3,
+      "salary_sar": 2500,
+      "is_saudi": false,
+      "housing_sar": 600,
+      "gov_fees_monthly_sar": 800
+    },
+    {
+      "role": "كاشير",
+      "count": 2,
+      "salary_sar": 4000,
+      "is_saudi": true
+    }
+  ],
+  "opex_monthly": {
+    "rent_sar": {
+      "v": 12000,
+      "src": "verified",
+      "ref": "data/contracts/"
+    },
+    "utilities_sar": {
+      "v": 5500,
+      "src": "verified",
+      "ref": "data/invoices/"
+    },
+    "gov_fees_sar": 1200,
+    "marketing_sar": 2000,
+    "maintenance_sar": 1500,
+    "pos_software_sar": 400,
+    "cleaning_pest_sar": 600,
+    "insurance_sar": 300,
+    "accounting_sar": 800,
+    "equipment_reserve_sar": 1500,
+    "owner_or_manager_salary_sar": 0,
+    "other_sar": 1000
+  },
+  "acquisition": {
+    "purchase_price_sar": 750000,
+    "inventory_sar": 35000,
+    "equipment_fair_value_sar": 220000,
+    "renovation_capex_sar": 40000,
+    "equipment_replacement_sar": 25000,
+    "license_transfer_fees_sar": 8000,
+    "working_capital_sar": 150000,
+    "rent_deposit_sar": 12000,
+    "contingency_sar": 50000
+  },
+  "assumptions": {
+    "gosi_pct_saudi": 21.5,
+    "gosi_pct_expat": 2.0,
+    "end_of_service_monthly_pct": 5.8,
+    "zakat_pct": 2.5,
+    "horizon_years": 5,
+    "annual_revenue_growth_pct": 3,
+    "annual_rent_escalation_pct": 5,
+    "discount_rate_pct": 12,
+    "valuation_multiple_low": 1.0,
+    "valuation_multiple_high": 2.0,
+    "terminal_value_multiple": 1.5
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "_كيفية_التعبئة": [
+    "كل قيمة رقمية يمكن كتابتها بطريقتين:",
+    "  1) رقم مجرد            -> يُصنَّف تلقائيًا كـ (تقدير)",
+    "  2) {\"v\": رقم, \"src\": \"verified|claimed|estimated\", \"ref\": \"مسار المستند\"}",
+    "القيمة null تعني (ناقص) — والمحرك سيُظهرها كمدخل حرج ناقص.",
+    "استخدم src=verified فقط إذا كان الرقم مستخرجًا من مستند في مجلد data/."
+  ],
+  "meta": {
+    "project_name": null,
+    "location": null,
+    "concept": null,
+    "area_sqm": null,
+    "seats": null,
+    "opened_year": null
+  },
+  "revenue": {
+    "operating_days_per_month": 30,
+    "channels": [
+      {
+        "name": "الصالة",
+        "orders_per_day": null,
+        "avg_ticket_sar": null,
+        "commission_pct": 0
+      },
+      {
+        "name": "السفري / الاستلام",
+        "orders_per_day": null,
+        "avg_ticket_sar": null,
+        "commission_pct": 0
+      },
+      {
+        "name": "تطبيقات التوصيل",
+        "orders_per_day": null,
+        "avg_ticket_sar": null,
+        "commission_pct": null
+      }
+    ]
+  },
+  "cogs": {
+    "food_cost_pct": null,
+    "packaging_cost_pct": null
+  },
+  "staff": [
+    {
+      "role": "مدير فرع",
+      "count": null,
+      "salary_sar": null,
+      "is_saudi": true,
+      "housing_sar": 0,
+      "gov_fees_monthly_sar": 0,
+      "other_monthly_sar": 0
+    },
+    {
+      "role": "شيف / طباخ",
+      "count": null,
+      "salary_sar": null,
+      "is_saudi": false,
+      "housing_sar": 0,
+      "gov_fees_monthly_sar": null,
+      "other_monthly_sar": 0
+    },
+    {
+      "role": "مساعد مطبخ",
+      "count": null,
+      "salary_sar": null,
+      "is_saudi": false,
+      "housing_sar": 0,
+      "gov_fees_monthly_sar": null,
+      "other_monthly_sar": 0
+    },
+    {
+      "role": "كاشير",
+      "count": null,
+      "salary_sar": null,
+      "is_saudi": true,
+      "housing_sar": 0,
+      "gov_fees_monthly_sar": 0,
+      "other_monthly_sar": 0
+    },
+    {
+      "role": "عامل نظافة",
+      "count": null,
+      "salary_sar": null,
+      "is_saudi": false,
+      "housing_sar": 0,
+      "gov_fees_monthly_sar": null,
+      "other_monthly_sar": 0
+    }
+  ],
+  "opex_monthly": {
+    "rent_sar": null,
+    "utilities_sar": null,
+    "gov_fees_sar": null,
+    "marketing_sar": null,
+    "maintenance_sar": null,
+    "pos_software_sar": null,
+    "cleaning_pest_sar": null,
+    "insurance_sar": null,
+    "accounting_sar": null,
+    "equipment_reserve_sar": null,
+    "owner_or_manager_salary_sar": null,
+    "other_sar": null
+  },
+  "acquisition": {
+    "purchase_price_sar": null,
+    "inventory_sar": null,
+    "equipment_fair_value_sar": null,
+    "renovation_capex_sar": null,
+    "equipment_replacement_sar": null,
+    "license_transfer_fees_sar": null,
+    "working_capital_sar": null,
+    "rent_deposit_sar": null,
+    "contingency_sar": null
+  },
+  "assumptions": {
+    "_ملاحظة": "النسب أدناه افتراضات منهجية قابلة للتعديل — وليست أرقامًا نظامية مؤكدة.",
+    "gosi_pct_saudi": null,
+    "gosi_pct_expat": null,
+    "end_of_service_monthly_pct": 5.8,
+    "zakat_pct": 2.5,
+    "horizon_years": 5,
+    "annual_revenue_growth_pct": 0,
+    "annual_rent_escalation_pct": null,
+    "discount_rate_pct": 12,
+    "valuation_multiple_low": 1.0,
+    "valuation_multiple_high": 2.0,
+    "terminal_value_multiple": 0
+  }
+}
