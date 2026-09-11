@@ -109,7 +109,13 @@
   .btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
   .btn-primary:hover:not(:disabled){ filter:brightness(1.08); }
   .btn-secondary:hover:not(:disabled){ border-color:var(--accent-line); }
-  .hint{ margin:12px 0 0; font-size:12px; color:var(--ink-3); }
+  .limit{
+    margin:16px auto 0; max-width:36ch; font-size:13.5px; font-weight:500;
+    color:var(--warn); background:var(--warn-soft); border:1px solid var(--warn-line);
+    border-radius:var(--r); padding:9px 13px;
+  }
+  .limit strong{ font-weight:700; }
+  .hint{ margin:10px 0 0; font-size:12px; color:var(--ink-3); line-height:1.7; }
   .hint strong{ color:var(--ink-2); font-weight:600; }
   .queue{ margin:14px 0 0; font-size:13px; font-weight:500; color:var(--accent);
           font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; }
@@ -218,12 +224,15 @@
       <button class="btn btn-primary" id="btn-cam" type="button" disabled>التقاط بالكاميرا</button>
       <button class="btn btn-secondary" id="btn-pick" type="button" disabled>صور من الجهاز</button>
       <button class="btn btn-secondary" id="btn-pdf" type="button" disabled>ملف PDF</button>
+      <button class="btn btn-secondary" id="btn-files" type="button" disabled>تصفّح الملفات</button>
     </div>
     <p class="queue" id="queue" hidden></p>
-    <p class="hint" id="hint">اختر <strong>10 إلى 15 صورة</strong> في المرة الواحدة. الاختيار الكبير يُوقف متصفح الجوال قبل أن تصل الصور للصفحة.</p>
+    <p class="limit">اختر <strong>10 صور كحد أقصى</strong> في المرة الواحدة</p>
+    <p class="hint" id="hint">اختيار أكبر يُعلّق متصفح الجوال وهو يحوّل الصور، قبل أن تصل الصفحة أصلًا — وهذا خارج ما تستطيع الصفحة معالجته. «تصفّح الملفات» يتجاوز هذه المرحلة وقد يقبل عددًا أكبر.</p>
     <input type="file" id="picker" name="picker" multiple accept="image/*" hidden>
     <input type="file" id="pdfpicker" name="pdfpicker" multiple accept="application/pdf,.pdf" hidden>
     <input type="file" id="camera" name="camera" accept="image/*" capture="environment" hidden>
+    <input type="file" id="filepicker" name="filepicker" multiple hidden>
   </div>
 
   <div class="list-head">
@@ -819,7 +828,9 @@
   el("diag-clear").addEventListener("click", function(){ LOG.length = 0; el("diag-log").textContent = ""; });
 
   // iOS يُبطل مراجع الملفات إذا صُفّر الحقل قبل قراءتها — صفّره بعد انتهاء المعالجة
-  ["picker","pdfpicker","camera"].forEach(function(id){
+  el("btn-files").addEventListener("click", function(){ log("== ضغط: تصفّح الملفات"); el("filepicker").click(); });
+
+  ["picker","pdfpicker","camera","filepicker"].forEach(function(id){
     var input = el(id);
     input.addEventListener("change", function(){
       var files = Array.prototype.slice.call(input.files || []);
@@ -871,6 +882,7 @@
     setConn("on", "التخزين متصل");
     el("btn-pick").disabled = false;
     el("btn-pdf").disabled = false;
+    el("btn-files").disabled = false;
     el("btn-cam").disabled = false;
     if(!assets){
       el("hint").textContent = "وضع القراءة فقط للأصول — الملفات ستُنقل بنسخة القراءة دون حفظ الأصل.";
