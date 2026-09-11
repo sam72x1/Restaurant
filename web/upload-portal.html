@@ -162,6 +162,19 @@
   .empty{ border:1px dashed var(--line); border-radius:var(--r); padding:26px 18px; text-align:center;
           color:var(--ink-2); font-size:13.5px; background:var(--sunken); }
 
+  .diag{ margin-top:30px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
+  .diag summary{ cursor:pointer; padding:11px 14px; font-size:13.5px; font-weight:600; color:var(--ink-2); }
+  .diag summary:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; }
+  .diag-help{ margin:0; padding:0 14px; font-size:12.5px; color:var(--ink-3); line-height:1.7; }
+  #diag-log{
+    margin:10px 14px; padding:11px 12px; background:var(--sunken); border:1px solid var(--line);
+    border-radius:8px; max-height:270px; overflow:auto; direction:ltr; text-align:left;
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px; line-height:1.75;
+    white-space:pre-wrap; overflow-wrap:anywhere; color:var(--ink-2);
+  }
+  .diag-actions{ display:flex; gap:8px; padding:0 14px 14px; }
+  .diag-actions .btn{ padding:7px 14px; font-size:13px; }
+
   .foot{ margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
          color:var(--ink-2); font-size:12.5px; }
   .foot strong{ color:var(--ink); font-weight:600; }
@@ -219,6 +232,16 @@
   </div>
   <ol class="docs" id="docs"></ol>
   <div class="empty" id="empty">لا يوجد شيء بعد. ابدأ بتقارير نقاط البيع وفواتير الكهرباء — هي أثقل بند في القرار.</div>
+
+  <details class="diag" id="diag">
+    <summary>سجل التشخيص</summary>
+    <p class="diag-help">إذا لم يُرفع شيء، افتح هذا السجل واضغط «نسخ السجل» وأرسله في المحادثة — يوضح أين توقّف بالضبط.</p>
+    <pre id="diag-log"></pre>
+    <div class="diag-actions">
+      <button class="btn btn-secondary" id="diag-copy" type="button">نسخ السجل</button>
+      <button class="btn btn-secondary" id="diag-clear" type="button">مسح</button>
+    </div>
+  </details>
 
   <div class="foot">
     <strong>كيف تصل الملفات لكلود</strong>
@@ -281,6 +304,35 @@
 
   var el = function(id){ return document.getElementById(id); };
 
+  var LOG = [], t0 = Date.now();
+  function log(msg){
+    var line = "[" + ((Date.now() - t0) / 1000).toFixed(1) + "s] " + msg;
+    LOG.push(line);
+    if(LOG.length > 400) LOG.shift();
+    var box = el("diag-log");
+    if(box) box.textContent = LOG.join("\n");
+    if(box) box.scrollTop = box.scrollHeight;
+  }
+
+  // وعد معلّق لا يفشل ولا ينجح هو أسوأ حالة: لا خطأ يظهر ولا شيء يتحرك.
+  function withTimeout(p, ms, label){
+    return new Promise(function(res, rej){
+      var fired = false;
+      var t = setTimeout(function(){
+        if(fired) return;
+        fired = true;
+        rej({code: "timeout", message: "تجاوز المهلة عند: " + label});
+      }, ms);
+      Promise.resolve(p).then(function(v){
+        if(fired) return;
+        fired = true; clearTimeout(t); res(v);
+      }, function(e){
+        if(fired) return;
+        fired = true; clearTimeout(t); rej(e);
+      });
+    });
+  }
+
   function banner(msg, bad){
     var b = el("banner");
     b.textContent = msg;
@@ -291,11 +343,16 @@
     b.appendChild(x);
     b.hidden = false;
   }
+  function openDiag(){ var d = el("diag"); if(d) d.open = true; }
   window.addEventListener("error", function(e){
-    banner("توقف غير متوقع: " + (e.message || "خطأ") + " — أعد تحميل الصفحة وجرّب دفعة أصغر.", true);
+    log("!! ERROR " + (e.message || "?") + " @" + (e.filename || "") + ":" + (e.lineno || 0));
+    openDiag();
+    banner("توقف غير متوقع: " + (e.message || "خطأ") + " — افتح سجل التشخيص أسفل الصفحة.", true);
   });
   window.addEventListener("unhandledrejection", function(e){
     var r = e.reason || {};
+    log("!! UNHANDLED " + (r.code || r.message || JSON.stringify(r)));
+    openDiag();
     banner("فشل غير معالج: " + errorText(r.code || r.message || "خطأ"), true);
   });
 
@@ -303,7 +360,7 @@
   var SOFT = ["rate_limited","resource_exhausted","store_unavailable","unavailable","upstream_error"];
   function withRetry(fn){
     function attempt(n){
-      return fn().catch(function(err){
+      return withTimeout(fn(), 45000, "الكتابة").catch(function(err){
         var code = err && err.code;
         if(n < 4 && SOFT.indexOf(code) !== -1){
           return new Promise(function(r){ setTimeout(r, 500 * Math.pow(2, n) + Math.random() * 400); })
@@ -540,8 +597,10 @@
       return Promise.resolve();
     }
     if(files.length > 15){
-      banner("اخترت " + files.length + " ملفًا. سترفع واحدًا تلو الآخر وقد يتوقف متصفح الجوال في المنتصف — " +
-             "الأفضل 10 إلى 15 في المرة. ما ينجح منها يبقى محفوظًا.");
+      files = files.slice(0, 15);
+      log("!! قُصّت الدفعة إلى 15 ملفًا");
+      banner("اخترت عددًا كبيرًا. سأرفع أول 15 فقط — متصفح الجوال يتوقف مع الدفعات الكبيرة. " +
+             "كرّر الاختيار للباقي بعد أن ينتهي العدّاد.");
     }
     var cat = currentCat();
     var note = el("note").value.trim();
@@ -577,15 +636,20 @@
       chunks: 0
     };
     busy++;
+    log("» " + (file.name || "بلا اسم") + " | نوع=" + (file.type || "فارغ") +
+        " | حجم=" + Math.round(file.size / 1024) + "ك.ب | صورة=" + (isImage ? "نعم" : "لا"));
     setConn("on", "جارٍ الرفع…");
     localRow(id, Object.assign({}, base, {progress: 0.05}));
 
     return withRetry(function(){ return ref.set(base); }).then(function(){
       if(!isImage) return file.size <= RAW_MAX ? file : null;
       // التحويل عبر الرسم قد يفشل على بعض صيغ الجوال — ارجع للملف الخام حينها
-      return makeReadable(file).then(function(out){
+      return withTimeout(makeReadable(file), 15000, "تحويل الصورة").then(function(out){
+        if(out) log("   ✓ حُوّلت إلى " + Math.round(out.size / 1024) + "ك.ب");
+        else log("   • لا تحويل — استخدام الملف كما هو");
         return out || (file.size <= RAW_MAX ? file : null);
-      }).catch(function(){
+      }).catch(function(e){
+        log("   ! فشل التحويل (" + (e && e.code ? e.code : "?") + ") — رجوع للملف الخام");
         return file.size <= RAW_MAX ? file : null;
       });
     }).then(function(readable){
@@ -598,9 +662,9 @@
         forAsset = readable; assetType = "image/jpeg";
       }
       var assetP = forAsset && assets
-        ? assets.upload(forAsset, assetType ? {type: assetType} : undefined)
-                .then(function(r){ return r.id; })
-                .catch(function(){ return null; })
+        ? withTimeout(assets.upload(forAsset, assetType ? {type: assetType} : undefined), 90000, "حفظ الأصل")
+                .then(function(r){ log("   ✓ حُفظ الأصل"); return r.id; })
+                .catch(function(e){ log("   ! تعذّر حفظ الأصل (" + (e && e.code ? e.code : "?") + ")"); return null; })
         : Promise.resolve(null);
       return assetP.then(function(assetId){ return {assetId: assetId, readable: readable}; });
     }).then(function(ctx){
@@ -614,6 +678,7 @@
       return toBase64(ctx.readable).then(function(b64){
         var parts = [];
         for(var i = 0; i < b64.length; i += CHUNK) parts.push(b64.slice(i, i + CHUNK));
+        log("   • " + parts.length + " جزء للنقل");
         if(parts.length > 48) throw new Error("الملف كبير جدًا على النقل");
         var p = Promise.resolve();
         parts.forEach(function(txt, i){
@@ -638,9 +703,12 @@
         });
       });
     }).then(function(){
+      log("   ✓ تم");
       localRow(id, {status: "stored", progress: 1});
     }).catch(function(err){
       var msg = (err && (err.code || err.message)) ? String(err.code || err.message) : "خطأ غير معروف";
+      log("   !! فشل: " + msg + (err && err.message ? " — " + err.message : ""));
+      openDiag();
       localRow(id, {status: "error", error: msg});
       banner("فشل «" + (file.name || "ملف") + "»: " + errorText(msg), true);
       ref.update({status: "error", error: msg}).catch(function(){});
@@ -673,16 +741,31 @@
   }
 
   /* ---------------- أحداث الواجهة ---------------- */
-  el("btn-pick").addEventListener("click", function(){ el("picker").click(); });
-  el("btn-pdf").addEventListener("click", function(){ el("pdfpicker").click(); });
-  el("btn-cam").addEventListener("click", function(){ el("camera").click(); });
+  el("btn-pick").addEventListener("click", function(){ log("== ضغط: صور من الجهاز"); el("picker").click(); });
+  el("btn-pdf").addEventListener("click", function(){ log("== ضغط: ملف PDF"); el("pdfpicker").click(); });
+  el("btn-cam").addEventListener("click", function(){ log("== ضغط: الكاميرا"); el("camera").click(); });
+
+  el("diag-copy").addEventListener("click", function(){
+    var txt = LOG.join("\n");
+    var done = function(){ banner("نُسخ السجل. الصقه في المحادثة."); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done, function(){ window.prompt("انسخ يدويًا:", txt); });
+    } else { window.prompt("انسخ يدويًا:", txt); }
+  });
+  el("diag-clear").addEventListener("click", function(){ LOG.length = 0; el("diag-log").textContent = ""; });
 
   // iOS يُبطل مراجع الملفات إذا صُفّر الحقل قبل قراءتها — صفّره بعد انتهاء المعالجة
   ["picker","pdfpicker","camera"].forEach(function(id){
     var input = el(id);
     input.addEventListener("change", function(){
       var files = Array.prototype.slice.call(input.files || []);
-      if(!files.length) return;
+      log("== حدث الاختيار (" + id + "): وصلت " + files.length + " ملفات");
+      if(!files.length){
+        log("!! المتصفح لم يسلّم أي ملف — قلّل عدد الصور المختارة");
+        banner("المتصفح لم يسلّم أي صورة. جرّب اختيار 5 صور فقط.", true);
+        openDiag();
+        return;
+      }
       handleFiles(files).then(function(){
         try { input.value = ""; } catch(err){}
       });
@@ -704,13 +787,18 @@
   render();
 
   if(!window.claude || !window.claude.use){
+    log("!! window.claude غير موجود");
+    openDiag();
     setConn("off", "افتح الصفحة من كلود");
     el("hint").textContent = "هذه الصفحة تحتاج تشغيلها داخل كلود حتى تعمل وظيفة الحفظ.";
     return;
   }
 
+  log("الصفحة جاهزة | " + navigator.userAgent.slice(0, 90));
+  log("claude.use متاح — جارٍ فتح التخزين…");
   Promise.all([window.claude.use("db"), window.claude.use("assets")]).then(function(pair){
     db = pair[0]; assets = pair[1];
+    log("db=" + (db ? "متصل" : "فارغ") + " | assets=" + (assets ? "متصل" : "فارغ"));
     if(!db){
       setConn("off", "التخزين غير متاح");
       el("hint").textContent = "تعذّر فتح التخزين في هذا العرض. جرّب إعادة تحميل الصفحة.";
