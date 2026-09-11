@@ -12,7 +12,7 @@ const { chromium } = require('/opt/node22/lib/node_modules/playwright');
       const id = path.split('/')[1];
       const isTop = path.split('/').length === 2;
       return {
-        set:(d)=>{ if(isTop){ store[id]={...d}; window.__uploads++; push(); } return Promise.resolve(); },
+        set:(d)=>{ if(isTop && path.indexOf('uploads/')===0){ store[id]={...d}; window.__uploads++; push(); } return Promise.resolve(); },
         update:(d)=>{ if(isTop){ store[id]={...store[id],...d}; push(); } return Promise.resolve(); },
         delete:()=>{ if(isTop){ delete store[id]; push(); } return Promise.resolve(); },
         collection:(s)=>mkCol(path+'/'+s)
@@ -40,7 +40,7 @@ const { chromium } = require('/opt/node22/lib/node_modules/playwright');
   console.log('الرفعة الأولى — مستندات أُنشئت:', first);
 
   await page.setInputFiles('#picker', probe);          // نفس الملف مرة ثانية
-  await page.waitForTimeout(2500);
+  await page.waitForTimeout(6000);
   const second = await page.evaluate(()=>window.__uploads);
   const banner = await page.evaluate(()=>{const b=document.getElementById('banner');return b.hidden?null:b.textContent;});
   console.log('بعد إعادة اختيار نفس الملف — مستندات أُنشئت:', second);
