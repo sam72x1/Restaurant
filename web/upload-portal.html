@@ -125,6 +125,18 @@
   #banner button{ border:0; background:none; color:inherit; font:inherit; font-weight:600;
                   cursor:pointer; text-decoration:underline; padding:0; margin-inline-start:8px; }
 
+  .retry{
+    margin-top:26px; border:1px solid var(--danger-line); background:var(--danger-soft);
+    border-radius:var(--r); padding:15px 16px;
+  }
+  .retry-lead{ margin:0 0 6px; font-size:14px; color:var(--danger); }
+  .retry-lead strong{ font-weight:700; }
+  .retry-names{
+    margin:0 0 13px; font-size:11.5px; color:var(--danger); opacity:.85; direction:ltr; text-align:left;
+    font-family:"IBM Plex Mono",ui-monospace,monospace; max-height:88px; overflow:auto;
+    overflow-wrap:anywhere; line-height:1.8;
+  }
+
   /* ---------- القائمة ---------- */
   .list-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px;
               margin:34px 0 12px; padding-bottom:9px; border-bottom:1px solid var(--line); }
@@ -233,6 +245,12 @@
     <input type="file" id="pdfpicker" name="pdfpicker" multiple accept="application/pdf,.pdf" hidden>
     <input type="file" id="camera" name="camera" accept="image/*" capture="environment" hidden>
     <input type="file" id="filepicker" name="filepicker" multiple hidden>
+  </div>
+
+  <div class="retry" id="retry" hidden>
+    <p class="retry-lead"><strong id="retry-count"></strong></p>
+    <p class="retry-names" id="retry-names"></p>
+    <button class="btn btn-primary" id="btn-retry" type="button">اختيار الفاشلة من المعرض</button>
   </div>
 
   <div class="list-head">
@@ -674,12 +692,24 @@
       if(r.status === "stored") pending++;
       else if(r.status === "error") bad++;
     });
+    paintRetry();
     var note = pending ? (pending + " بانتظار السحب")
              : bad ? (bad + " فشل — أعد الرفع")
              : "كل شيء وصل";
     if(rows.length > MAX_ROWS) note += " · يُعرض أحدث " + MAX_ROWS + " من " + rows.length;
     el("list-note").textContent = note;
     paintMeters();
+  }
+
+  function paintRetry(){
+    var box = el("retry");
+    if(!box) return;
+    var bad = rows.filter(function(r){ return r.status === "error"; });
+    if(!bad.length){ box.hidden = true; return; }
+    box.hidden = false;
+    el("retry-count").textContent = bad.length + " " +
+      (bad.length === 1 ? "ملف لم يُرفع" : "ملفات لم تُرفع") + " — أعد اختيارها من المعرض";
+    el("retry-names").textContent = bad.map(function(r){ return r.name || r.id; }).join("  ·  ");
   }
 
   function paintMeters(){
@@ -791,6 +821,10 @@
     render();
   }
 
+  function rowKey(r){
+    return (r.name || "?") + "|" + (r.originalSize || 0);
+  }
+
   function fileKey(f){
     // بلا وقت التعديل عمدًا: iOS يمنح الملف وقتًا جديدًا عند كل تحويل من
     // HEIC، فيصبح المفتاح مختلفًا في كل اختيار ويسقط التخطّي كليًا —
@@ -827,7 +861,7 @@
     // تخطّي ما رُفع من قبل: إعادة اختيار الدفعة كاملة ترفع الناقص فقط
     var seen = {};
     rows.forEach(function(r){
-      if(r.fileKey && r.status !== "error") seen[r.fileKey] = true;
+      if(r.status !== "error" && r.status !== "uploading") seen[rowKey(r)] = true;
     });
     var total0 = files.length, skipped = 0;
     files = files.filter(function(f){
@@ -870,6 +904,7 @@
       setQueue(0, 0);
       releaseWake();
       paintUsage();
+      dropSuperseded();
     }
     return chain.then(function(){
       endBatch();
@@ -984,6 +1019,34 @@
     }
   }
 
+  // صف فاشل نجح بديله لا داعي لبقائه يربك القائمة
+  function dropSuperseded(){
+    if(!db) return;
+    var ok = {};
+    rows.forEach(function(r){
+      if(r.status !== "error" && r.status !== "uploading") ok[rowKey(r)] = true;
+    });
+    rows.filter(function(r){ return r.status === "error" && ok[rowKey(r)]; })
+        .forEach(function(r){
+          log("• أُزيل صف فاشل نجح بديله: " + (r.name || r.id));
+          purge(r);
+        });
+  }
+
+  function purge(r){
+    var ref = db.collection("uploads").doc(r.id);
+    var p = Promise.resolve();
+    for(var i = 0; i < (r.chunks || 0); i++){
+      (function(n){
+        p = p.then(function(){ return ref.collection("parts").doc(("000" + n).slice(-4)).delete(); })
+             .catch(function(){});
+      })(i);
+    }
+    return p.then(function(){ return ref.delete(); })
+            .then(function(){ if(r.assetId && assets) return assets.delete(r.assetId).catch(function(){}); })
+            .catch(function(){});
+  }
+
   function removeDoc(r){
     if(!db) return;
     if(!window.confirm("حذف «" + (r.name || "المستند") + "» نهائيًا؟")) return;
@@ -1021,6 +1084,13 @@
   el("diag-clear").addEventListener("click", function(){ LOG.length = 0; el("diag-log").textContent = ""; });
 
   // iOS يُبطل مراجع الملفات إذا صُفّر الحقل قبل قراءتها — صفّره بعد انتهاء المعالجة
+  el("btn-retry").addEventListener("click", function(){
+    log("== ضغط: إعادة رفع الفاشلة");
+    banner("اختر الملفات المذكورة أعلاه. ما نجح سابقًا سيُتخطّى تلقائيًا، " +
+           "والصف الفاشل يُحذف بعد نجاح بديله.");
+    el("picker").click();
+  });
+
   el("btn-files").addEventListener("click", function(){ log("== ضغط: تصفّح الملفات"); el("filepicker").click(); });
 
   ["picker","pdfpicker","camera","filepicker"].forEach(function(id){
