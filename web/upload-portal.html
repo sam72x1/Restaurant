@@ -314,14 +314,22 @@
 
   var el = function(id){ return document.getElementById(id); };
 
-  var LOG = [], t0 = Date.now();
-  function log(msg){
-    var line = "[" + ((Date.now() - t0) / 1000).toFixed(1) + "s] " + msg;
-    LOG.push(line);
-    if(LOG.length > 400) LOG.shift();
+  var LOG = [], t0 = Date.now(), logPending = false;
+  function flushLog(){
+    logPending = false;
     var box = el("diag-log");
-    if(box) box.textContent = LOG.join("\n");
-    if(box) box.scrollTop = box.scrollHeight;
+    if(!box) return;
+    box.textContent = LOG.join("\n");
+    box.scrollTop = box.scrollHeight;
+  }
+  function log(msg){
+    LOG.push("[" + ((Date.now() - t0) / 1000).toFixed(1) + "s] " + msg);
+    if(LOG.length > 400) LOG.shift();
+    // الكتابة وقياس التخطيط عند كل سطر يكلّفان ثوانٍ عبر دفعة كبيرة
+    var d = el("diag");
+    if(!d || !d.open || logPending) return;
+    logPending = true;
+    (window.requestAnimationFrame || function(f){ setTimeout(f, 16); })(flushLog);
   }
 
   // وعد معلّق لا يفشل ولا ينجح هو أسوأ حالة: لا خطأ يظهر ولا شيء يتحرك.
@@ -368,7 +376,7 @@
     return Promise.all(lanes);
   }
 
-  var wakeLock = null, active = {};
+  var wakeLock = null, active = {}, batchRunning = false;
   function acquireWake(){
     if(wakeLock || !navigator.wakeLock || !navigator.wakeLock.request) return;
     navigator.wakeLock.request("screen").then(function(w){
@@ -417,7 +425,7 @@
     b.appendChild(x);
     b.hidden = false;
   }
-  function openDiag(){ var d = el("diag"); if(d) d.open = true; }
+  function openDiag(){ var d = el("diag"); if(d && !d.open){ d.open = true; flushLog(); } }
   window.addEventListener("error", function(e){
     log("!! ERROR " + (e.message || "?") + " @" + (e.filename || "") + ":" + (e.lineno || 0));
     openDiag();
@@ -643,7 +651,10 @@
     ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, w, h);
     ctx.drawImage(bmp, 0, 0, w, h);
     return new Promise(function(res, rej){
-      c.toBlob(function(b){ b ? res(b) : rej(new Error("تعذّر ترميز الصورة")); }, "image/jpeg", q);
+      c.toBlob(function(b){
+        c.width = c.height = 0;          // حرّر ذاكرة اللوحة فورًا لا عند الكنس
+        b ? res(b) : rej(new Error("تعذّر ترميز الصورة"));
+      }, "image/jpeg", q);
     });
   }
 
@@ -657,20 +668,30 @@
   // مصغّرة عرض صغيرة (بضعة كيلوبايتات) بدل رفع ميجابايتات لا تُقرأ
   function makeThumb(src){
     if(typeof createImageBitmap !== "function" || !src) return Promise.resolve(null);
-    return createImageBitmap(src).then(function(bmp){
-      return drawJpeg(bmp, THUMB[0], THUMB[1]).then(function(b){
-        if(bmp.close) bmp.close();
-        return b;
-      });
+    return decodeCapped(src).then(function(bmp){
+      var shut = function(){ if(bmp.close) bmp.close(); };
+      return drawJpeg(bmp, THUMB[0], THUMB[1]).then(function(b){ shut(); return b; },
+                                                    function(e){ shut(); throw e; });
     }).catch(function(){ return null; });
+  }
+
+  // فك الترميز بحد أقصى للعرض: صورة 12 ميجابكسل تشغل نحو 48 ميجابايت
+  // في الذاكرة، وأعلى درجة في سلّم الضغط 1800 أصلًا — فلا شيء يُفقد.
+  function decodeCapped(src){
+    var opts = {imageOrientation: "from-image"};
+    // الحد ينطبق على الصور الكبيرة فقط: فرضه على صورة صغيرة يُكبّرها ويضخّمها
+    if(src && src.size > 500 * 1024){ opts.resizeWidth = 1800; opts.resizeQuality = "high"; }
+    var p;
+    try { p = createImageBitmap(src, opts); }
+    catch(err){ p = createImageBitmap(src); }
+    return p.catch(function(){
+      return createImageBitmap(src, {imageOrientation: "from-image"});
+    }).catch(function(){ return createImageBitmap(src); });
   }
 
   function makeReadable(file){
     if(typeof createImageBitmap !== "function") return Promise.resolve(null);
-    var bmpP;
-    try { bmpP = createImageBitmap(file, {imageOrientation:"from-image"}); }
-    catch(err){ bmpP = createImageBitmap(file); }
-    return bmpP.catch(function(){ return createImageBitmap(file); }).then(function(bmp){
+    return decodeCapped(file).then(function(bmp){
       var i = 0, best = null;
       function step(){
         if(i >= LADDER.length) return best;
@@ -681,10 +702,9 @@
           return step();
         });
       }
-      return step().then(function(out){
-        if(bmp.close) bmp.close();
-        return out;
-      });
+      var shut = function(){ if(bmp.close) bmp.close(); };
+      return step().then(function(out){ shut(); return out; },
+                         function(e){ shut(); throw e; });
     });
   }
 
@@ -739,6 +759,10 @@
       banner("التخزين لم يفتح بعد. انتظر حتى تصبح النقطة خضراء ثم أعد المحاولة.", true);
       return Promise.resolve();
     }
+    if(batchRunning){
+      banner("هناك دفعة تعمل الآن. انتظر حتى يختفي العدّاد ثم أضف الباقي.");
+      return Promise.resolve();
+    }
     // تخطّي ما رُفع من قبل: إعادة اختيار الدفعة كاملة ترفع الناقص فقط
     var seen = {};
     rows.forEach(function(r){
@@ -773,12 +797,22 @@
         });
       });
     });
-    return chain.then(function(){
+    batchRunning = true;
+    function endBatch(){
+      batchRunning = false;
       setQueue(0, 0);
       releaseWake();
-      el("note").value = "";
       paintUsage();
-      banner("انتهت الدفعة. قل «رفعت» في المحادثة، أو تابع بدفعة جديدة.");
+    }
+    return chain.then(function(){
+      endBatch();
+      el("note").value = "";
+      banner("انتهت الدفعة: " + files.length + " ملفًا. قل «رفعت» في المحادثة، أو تابع بدفعة جديدة.");
+    }, function(e){
+      endBatch();
+      log("!! توقفت الدفعة: " + (e && (e.code || e.message) ? (e.code || e.message) : "?"));
+      openDiag();
+      banner("توقفت الدفعة قبل نهايتها. أعد اختيار نفس الصور — سيرفع الناقص فقط.", true);
     });
   }
 
@@ -822,14 +856,14 @@
       // للعرض فقط، والنسخة الكاملة تصل عبر الأجزاء.
       var converted = readable && readable !== file;
       var assetP = (assets && converted)
-        ? withTimeout(makeThumb(readable), 8000, "المصغّرة")
-            .then(function(tb){
+        ? withTimeout(makeThumb(readable).then(function(tb){
               if(!tb) return null;
               return assets.upload(tb, {type: "image/jpeg"}).then(function(r){ return r.id; });
-            })
+            }), 25000, "المصغّرة")
             .catch(function(e){ log("   • بلا مصغّرة (" + (e && e.code ? e.code : "?") + ")"); return null; })
         : Promise.resolve(null);
-      var b64P = readable ? toBase64(readable) : Promise.resolve(null);
+      var b64P = readable ? withTimeout(toBase64(readable), 45000, "قراءة الملف")
+                          : Promise.resolve(null);
       return Promise.all([assetP, b64P]).then(function(out){
         return {assetId: out[0], readable: readable, b64: out[1]};
       });
@@ -863,18 +897,24 @@
     }).then(function(){
       log("   ✓ تم");
       localRow(id, {status: "stored", progress: 1});
-    }).catch(function(err){
-      var msg = (err && (err.code || err.message)) ? String(err.code || err.message) : "خطأ غير معروف";
-      log("   !! فشل: " + msg + (err && err.message ? " — " + err.message : ""));
-      openDiag();
-      localRow(id, {status: "error", error: msg});
-      banner("فشل «" + (file.name || "ملف") + "»: " + errorText(msg), true);
-      ref.update({status: "error", error: msg}).catch(function(){});
-    }).then(function(){
+    }).then(null, function(err){
+      // معالج الخطأ نفسه قد يُخفق؛ لو أخفق خارج try لسقطت بقية الدفعة بصمت
+      try {
+        var msg = (err && (err.code || err.message)) ? String(err.code || err.message) : "خطأ غير معروف";
+        log("   !! فشل: " + msg + (err && err.message ? " — " + err.message : ""));
+        openDiag();
+        localRow(id, {status: "error", error: msg});
+        banner("فشل «" + (file.name || "ملف") + "»: " + errorText(msg), true);
+        var up = ref.update({status: "error", error: msg});
+        if(up && up.catch) up.catch(function(){});
+      } catch(inner){ /* لا شيء يمنع الملف التالي */ }
+    }).then(finish, finish);
+
+    function finish(){
       busy--;
       delete active[id];
-      if(busy <= 0){ busy = 0; setConn("on", "التخزين متصل"); releaseWake(); }
-    });
+      if(busy <= 0){ busy = 0; setConn("on", "التخزين متصل"); }
+    }
   }
 
   function removeDoc(r){
