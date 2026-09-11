@@ -315,22 +315,47 @@
   }
 
   // وعد معلّق لا يفشل ولا ينجح هو أسوأ حالة: لا خطأ يظهر ولا شيء يتحرك.
+  // المهلة تحتسب الوقت الذي كانت الصفحة فيه مرئية فقط. حين تغادر الصفحة
+  // يتجمّد كل شيء على iOS، فلا يجوز أن يُحسب ذلك الوقت ضد العملية.
   function withTimeout(p, ms, label){
     return new Promise(function(res, rej){
-      var fired = false;
-      var t = setTimeout(function(){
-        if(fired) return;
-        fired = true;
-        rej({code: "timeout", message: "تجاوز المهلة عند: " + label});
-      }, ms);
+      var settled = false, visibleMs = 0, last = Date.now();
+      var iv = setInterval(function(){
+        var now = Date.now();
+        if(!document.hidden) visibleMs += now - last;
+        last = now;
+        if(!settled && visibleMs >= ms){
+          settled = true; clearInterval(iv);
+          rej({code: "timeout", message: "تجاوز المهلة عند: " + label});
+        }
+      }, 1000);
       Promise.resolve(p).then(function(v){
-        if(fired) return;
-        fired = true; clearTimeout(t); res(v);
+        if(settled) return;
+        settled = true; clearInterval(iv); res(v);
       }, function(e){
-        if(fired) return;
-        fired = true; clearTimeout(t); rej(e);
+        if(settled) return;
+        settled = true; clearInterval(iv); rej(e);
       });
     });
+  }
+
+  // كتابة الأجزاء على عدة مسارات متوازية بدل واحدًا تلو الآخر
+  function writeChunks(ref, parts, onProgress){
+    var next = 0, done = 0, failure = null;
+    function lane(){
+      if(failure) return Promise.reject(failure);
+      if(next >= parts.length) return Promise.resolve();
+      var i = next++;
+      return withRetry(function(){
+        return ref.collection("parts").doc(("000" + i).slice(-4)).set({i: i, b64: parts[i]});
+      }).then(function(){
+        onProgress(++done / parts.length);
+        return lane();
+      }, function(e){ failure = failure || e; throw e; });
+    }
+    var lanes = [];
+    for(var k = 0; k < Math.min(3, parts.length); k++) lanes.push(lane());
+    return Promise.all(lanes);
   }
 
   var wakeLock = null, active = {};
@@ -696,20 +721,23 @@
         return file.size <= RAW_MAX ? file : null;
       });
     }).then(function(readable){
-      localRow(id, {progress: 0.25});
-      // 1) حفظ النسخة الأصلية كأصل دائم
+      localRow(id, {progress: 0.2});
       var forAsset = null, assetType = null;
       if(ASSET_TYPES.indexOf(file.type) !== -1 && file.size <= ASSET_MAX){
         forAsset = file; assetType = file.type;
       } else if(readable && readable !== file){
         forAsset = readable; assetType = "image/jpeg";
       }
+      // حفظ الأصل وترميز نسخة النقل يجريان معًا — لا داعي لانتظار أحدهما
       var assetP = forAsset && assets
-        ? withTimeout(assets.upload(forAsset, assetType ? {type: assetType} : undefined), 90000, "حفظ الأصل")
+        ? withTimeout(assets.upload(forAsset, assetType ? {type: assetType} : undefined), 120000, "حفظ الأصل")
                 .then(function(r){ log("   ✓ حُفظ الأصل"); return r.id; })
                 .catch(function(e){ log("   ! تعذّر حفظ الأصل (" + (e && e.code ? e.code : "?") + ")"); return null; })
         : Promise.resolve(null);
-      return assetP.then(function(assetId){ return {assetId: assetId, readable: readable}; });
+      var b64P = readable ? toBase64(readable) : Promise.resolve(null);
+      return Promise.all([assetP, b64P]).then(function(out){
+        return {assetId: out[0], readable: readable, b64: out[1]};
+      });
     }).then(function(ctx){
       localRow(id, {progress: 0.4, assetId: ctx.assetId});
       if(!ctx.readable){
@@ -718,22 +746,14 @@
           error: "أكبر من حد النقل — محفوظ كأصل فقط"
         }); }).then(function(){ return null; });
       }
-      return toBase64(ctx.readable).then(function(b64){
+      return Promise.resolve(ctx.b64).then(function(b64){
         var parts = [];
         for(var i = 0; i < b64.length; i += CHUNK) parts.push(b64.slice(i, i + CHUNK));
         log("   • " + parts.length + " جزء للنقل");
         if(parts.length > 48) throw new Error("الملف كبير جدًا على النقل");
-        var p = Promise.resolve();
-        parts.forEach(function(txt, i){
-          p = p.then(function(){
-            return withRetry(function(){
-              return ref.collection("parts").doc(("000" + i).slice(-4)).set({i: i, b64: txt});
-            });
-          }).then(function(){
-            localRow(id, {progress: 0.4 + 0.55 * (i + 1) / parts.length});
-          });
-        });
-        return p.then(function(){
+        return writeChunks(ref, parts, function(frac){
+          localRow(id, {progress: 0.4 + 0.55 * frac});
+        }).then(function(){
           return withRetry(function(){ return ref.update({
             status: "stored",
             assetId: ctx.assetId,
