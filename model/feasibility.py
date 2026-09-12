@@ -24,6 +24,7 @@ class Field:
     def __init__(self, raw, path):
         self.path = path
         self.ref = ""
+        self.required = False
         if raw is None:
             self.value, self.src = None, "missing"
         elif isinstance(raw, dict):
@@ -127,16 +128,20 @@ def build_staff(inp):
     rows, total = [], 0.0
     for i, s in enumerate(staff):
         role = s.get("role", f"وظيفة {i+1}")
-        cnt = float(s.get("count") or 0)
-        sal = s.get("salary_sar")
+        # كل حقل قد يأتي رقمًا مجردًا أو كائنًا يحمل مصدره
+        def num(key, default=0.0):
+            fld = Field(s.get(key), f"staff[{i}].{key}")
+            inp.fields.append(fld)
+            return fld.n(default) if fld.ok else None
+        cnt = num("count", 0) or 0
+        sal = num("salary_sar")
         if sal is None:
             rows.append({"role": role, "missing": True})
             continue
-        sal = float(sal)
         saudi = bool(s.get("is_saudi", False))
-        housing = float(s.get("housing_sar") or 0)
-        other = float(s.get("other_monthly_sar") or 0)
-        gov = float(s.get("gov_fees_monthly_sar") or 0)
+        housing = num("housing_sar", 0) or 0
+        other = num("other_monthly_sar", 0) or 0
+        gov = num("gov_fees_monthly_sar", 0) or 0
         soc = sal * (gosi if saudi else gosi_x) / 100.0
         end = sal * eos / 100.0
         per = sal + soc + end + housing + other + gov

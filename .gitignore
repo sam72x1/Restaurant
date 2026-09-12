@@ -10,6 +10,7 @@ data/**
 
 reports/**
 !reports/.gitkeep
+!reports/feasibility-study.md
 
 __pycache__/
 *.pyc

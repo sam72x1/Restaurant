@@ -1,15 +1,14 @@
 {
-  "_كيفية_التعبئة": [
-    "كل قيمة رقمية يمكن كتابتها بطريقتين:",
-    "  1) رقم مجرد            -> يُصنَّف تلقائيًا كـ (تقدير)",
-    "  2) {\"v\": رقم, \"src\": \"verified|claimed|estimated\", \"ref\": \"مسار المستند\"}",
-    "القيمة null تعني (ناقص) — والمحرك سيُظهرها كمدخل حرج ناقص.",
-    "استخدم src=verified فقط إذا كان الرقم مستخرجًا من مستند في مجلد data/."
+  "_مصادر_الأرقام": [
+    "المبيعات: تقرير نظام رواء 01/04/2026–07/09/2026 = 115,500 ريال على 160 يومًا",
+    "تكلفة المواد: 33 فاتورة مورد موثقة ÷ مبيعات النظام لنفس الفترة = 37.4%",
+    "الإيجار والسعر: من المشتري مباشرة",
+    "ما عدا ذلك تقديرات مُعلَّنة"
   ],
   "meta": {
-    "project_name": null,
-    "location": null,
-    "concept": null,
+    "project_name": "استحواذ على مطعم مشوي كور — الحمراء، تبوك",
+    "location": "تبوك — حي الحمراء",
+    "concept": "شاورما ووجبات سريعة",
     "area_sqm": null,
     "seats": null,
     "opened_year": null
@@ -17,114 +16,53 @@
   "revenue": {
     "operating_days_per_month": 30,
     "channels": [
-      {
-        "name": "الصالة",
-        "orders_per_day": null,
-        "avg_ticket_sar": null,
-        "commission_pct": 0
-      },
-      {
-        "name": "السفري / الاستلام",
-        "orders_per_day": null,
-        "avg_ticket_sar": null,
-        "commission_pct": 0
-      },
-      {
-        "name": "تطبيقات التوصيل",
-        "orders_per_day": null,
-        "avg_ticket_sar": null,
-        "commission_pct": null
-      }
+      { "name": "مبيعات النظام (صالة وسفري)", "orders_per_day": {"v": 40, "src": "verified", "ref": "تقرير رواء: 722 ريال/يوم ÷ 18.05 متوسط العملية"}, "avg_ticket_sar": {"v": 18.05, "src": "verified", "ref": "موازنات مدى: 1318 ريال ÷ 73 عملية"}, "commission_pct": 0 }
     ]
   },
   "cogs": {
-    "food_cost_pct": null,
-    "packaging_cost_pct": null
+    "food_cost_pct": {"v": 37.4, "src": "verified", "ref": "10,540 ريال مشتريات ÷ 39 يومًا ÷ 722 ريال مبيعات يومية"},
+    "packaging_cost_pct": 3
   },
   "staff": [
-    {
-      "role": "مدير فرع",
-      "count": null,
-      "salary_sar": null,
-      "is_saudi": true,
-      "housing_sar": 0,
-      "gov_fees_monthly_sar": 0,
-      "other_monthly_sar": 0
-    },
-    {
-      "role": "شيف / طباخ",
-      "count": null,
-      "salary_sar": null,
-      "is_saudi": false,
-      "housing_sar": 0,
-      "gov_fees_monthly_sar": null,
-      "other_monthly_sar": 0
-    },
-    {
-      "role": "مساعد مطبخ",
-      "count": null,
-      "salary_sar": null,
-      "is_saudi": false,
-      "housing_sar": 0,
-      "gov_fees_monthly_sar": null,
-      "other_monthly_sar": 0
-    },
-    {
-      "role": "كاشير",
-      "count": null,
-      "salary_sar": null,
-      "is_saudi": true,
-      "housing_sar": 0,
-      "gov_fees_monthly_sar": 0,
-      "other_monthly_sar": 0
-    },
-    {
-      "role": "عامل نظافة",
-      "count": null,
-      "salary_sar": null,
-      "is_saudi": false,
-      "housing_sar": 0,
-      "gov_fees_monthly_sar": null,
-      "other_monthly_sar": 0
-    }
+    { "role": "عامل شاورما", "count": 1, "salary_sar": {"v": 2200, "src": "estimated"}, "is_saudi": false, "housing_sar": 600, "gov_fees_monthly_sar": 800, "other_monthly_sar": 0 }
   ],
   "opex_monthly": {
-    "rent_sar": null,
-    "utilities_sar": null,
-    "gov_fees_sar": null,
-    "marketing_sar": null,
-    "maintenance_sar": null,
-    "pos_software_sar": null,
-    "cleaning_pest_sar": null,
-    "insurance_sar": null,
-    "accounting_sar": null,
-    "equipment_reserve_sar": null,
-    "owner_or_manager_salary_sar": null,
-    "other_sar": null
+    "rent_sar": {"v": 2000, "src": "claimed", "ref": "من المشتري — يحتاج نسخة عقد إيجار موثق"},
+    "utilities_sar": {"v": 1200, "src": "estimated"},
+    "gov_fees_sar": 300,
+    "marketing_sar": 0,
+    "maintenance_sar": 300,
+    "pos_software_sar": 200,
+    "cleaning_pest_sar": 200,
+    "insurance_sar": 0,
+    "accounting_sar": 300,
+    "equipment_reserve_sar": 300,
+    "owner_or_manager_salary_sar": 0,
+    "other_sar": 200
   },
   "acquisition": {
-    "purchase_price_sar": null,
+    "purchase_price_sar": {"v": 30000, "src": "claimed", "ref": "السعر المطروح"},
     "inventory_sar": null,
     "equipment_fair_value_sar": null,
     "renovation_capex_sar": null,
     "equipment_replacement_sar": null,
-    "license_transfer_fees_sar": null,
-    "working_capital_sar": null,
-    "rent_deposit_sar": null,
-    "contingency_sar": null
+    "license_transfer_fees_sar": 2000,
+    "working_capital_sar": 15000,
+    "rent_deposit_sar": 2000,
+    "contingency_sar": 5000
   },
   "assumptions": {
-    "_ملاحظة": "النسب أدناه افتراضات منهجية قابلة للتعديل — وليست أرقامًا نظامية مؤكدة.",
-    "gosi_pct_saudi": null,
-    "gosi_pct_expat": null,
+    "_ملاحظة": "نمو صفري عمدًا: لا تُحتسب تحسينات المشتري في السيناريو الأساسي",
+    "gosi_pct_saudi": 21.5,
+    "gosi_pct_expat": 2.0,
     "end_of_service_monthly_pct": 5.8,
     "zakat_pct": 2.5,
     "horizon_years": 5,
     "annual_revenue_growth_pct": 0,
-    "annual_rent_escalation_pct": null,
+    "annual_rent_escalation_pct": 5,
     "discount_rate_pct": 12,
     "valuation_multiple_low": 1.0,
     "valuation_multiple_high": 2.0,
-    "terminal_value_multiple": 0
+    "terminal_value_multiple": 1.0
   }
 }
