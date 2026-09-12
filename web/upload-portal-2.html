@@ -521,12 +521,36 @@
   });
 
   // صف عالق لأن الصفحة تجمّدت: لا تتركه معلّقًا إلى الأبد
+  // withTimeout يعدّ الزمن الظاهر فقط، فإن جمّد النظام الصفحة توقف عدّاده
+  // ولم يُفلت العملية أبدًا. هذه مهلة مطلقة لا تعتمد على الظهور: ضمانٌ
+  // بأن المسار يتقدّم مهما حدث لعمليةٍ واحدة.
+  var FILE_DEADLINE = 150000;
+  function withDeadline(p, ms, label){
+    return new Promise(function(res, rej){
+      var settled = false;
+      var t = setTimeout(function(){
+        if(settled) return;
+        settled = true;
+        rej({code: "deadline", message: "تجاوز الحد الأقصى عند: " + label});
+      }, ms);
+      Promise.resolve(p).then(function(v){
+        if(settled) return; settled = true; clearTimeout(t); res(v);
+      }, function(e){
+        if(settled) return; settled = true; clearTimeout(t); rej(e);
+      });
+    });
+  }
+
   function sweepStalled(){
     if(!db) return;
     var cutoff = Date.now() - 120000;
+    // الصف النشط كان مستثنًى هنا، فملفٌ علّق مساره بقي «جارٍ الرفع» إلى الأبد.
+    // يُستثنى الآن ما دام دون المهلة المطلقة فقط.
+    var hardCutoff = Date.now() - (FILE_DEADLINE + 30000);
     rows.forEach(function(r){
-      if(r.status !== "uploading" || active[r.id]) return;
+      if(r.status !== "uploading") return;
       var started = new Date(r.createdAt || 0).getTime();
+      if(active[r.id] && (!started || started > hardCutoff)) return;
       if(!started || started > cutoff) return;
       log("• صف عالق: " + (r.name || r.id) + " — وُسم كفاشل");
       db.collection("uploads").doc(r.id)
@@ -933,8 +957,11 @@
     // وهي أبطأ مرحلة على الجهاز الحقيقي (نحو أربع ثوانٍ لكل ملف).
     function lane(){
       if(next >= files.length) return Promise.resolve();
-      var f = files[next++];
+      var idx = next++, f = files[idx];
       return uploadOne(f, cat, note).then(function(){
+        // 203 مرجع ملف = نحو 500 م.ب محجوزة. إفلات المرجع بعد الانتهاء
+        // يسمح للنظام باستردادها، وضغط الذاكرة هو ما علّق فك الترميز.
+        files[idx] = null;
         setQueue(++done, files.length);
         return lane();
       });
@@ -988,7 +1015,7 @@
     setConn("on", "جارٍ الرفع…");
     localRow(id, Object.assign({}, base, {progress: 0.05}));
 
-    return withRetry(function(){ return ref.set(base); }).then(function(){
+    var pipeline = withRetry(function(){ return ref.set(base); }).then(function(){
       if(!isImage) return file.size <= RAW_MAX ? file : null;
       // التحويل عبر الرسم قد يفشل على بعض صيغ الجوال — ارجع للملف الخام حينها
       return withTimeout(makeReadable(file), 15000, "تحويل الصورة").then(function(out){
@@ -1046,10 +1073,13 @@
     }).then(function(){
       log("   ✓ تم");
       localRow(id, {status: "stored", progress: 1});
-    }).then(null, function(err){
+    });
+
+    return withDeadline(pipeline, FILE_DEADLINE, file.name || id).then(null, function(err){
       // معالج الخطأ نفسه قد يُخفق؛ لو أخفق خارج try لسقطت بقية الدفعة بصمت
       try {
         var msg = (err && (err.code || err.message)) ? String(err.code || err.message) : "خطأ غير معروف";
+        if(msg === "deadline") audit("file_deadline", {name: file.name || "", size: file.size || 0});
         log("   !! فشل: " + msg + (err && err.message ? " — " + err.message : ""));
         openDiag();
         localRow(id, {status: "error", error: msg});
