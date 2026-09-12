@@ -8,7 +8,7 @@
   "meta": {
     "project_name": "استحواذ وتطوير — مشوي كور، الحمراء بتبوك",
     "location": "تبوك — حي الحمراء",
-    "concept": "شاورما ووجبات سريعة + جلسات خارجية وبث مباريات",
+    "concept": "شاورما ووجبات سريعة + جلسات خارجية",
     "area_sqm": null,
     "seats": null,
     "opened_year": null
@@ -19,9 +19,9 @@
       {
         "name": "مبيعات النظام (صالة وسفري)",
         "orders_per_day": {
-          "v": 77.6,
+          "v": 66.5,
           "src": "estimated",
-          "ref": "هدف ما بعد التطوير: 1,400 ريال/يوم"
+          "ref": "هدف ما بعد التطوير: 1,200 ريال/يوم ÷ 18.05"
         },
         "avg_ticket_sar": {
           "v": 18.05,
@@ -98,9 +98,9 @@
     "equipment_reserve_sar": 300,
     "owner_or_manager_salary_sar": 0,
     "other_sar": {
-      "v": 2000,
+      "v": 0,
       "src": "estimated",
-      "ref": "اشتراك بي إن التجاري — افتراضي حتى يصل عرض السعر"
+      "ref": "بث المباريات مؤجَّل بقرار المشتري — خارج الحساب"
     }
   },
   "acquisition": {
@@ -112,16 +112,16 @@
     "inventory_sar": null,
     "equipment_fair_value_sar": null,
     "renovation_capex_sar": {
-      "v": 20000,
+      "v": 15000,
       "src": "estimated",
-      "ref": "جلسات خارجية ومظلات وشاشة ورسيفر"
+      "ref": "جلسات خارجية: مظلات وطاولات وكراسي — بلا رسوم بلدية"
     },
     "equipment_replacement_sar": null,
     "license_transfer_fees_sar": 2000,
     "working_capital_sar": {
-      "v": 22400,
+      "v": 15392,
       "src": "estimated",
-      "ref": "تمويل خسائر ثمانية أشهر حتى التعادل"
+      "ref": "تمويل الخسارة التراكمية حتى التعادل في الشهر الثامن"
     },
     "rent_deposit_sar": 2000,
     "contingency_sar": 5000
