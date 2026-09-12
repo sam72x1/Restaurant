@@ -130,14 +130,14 @@
       </div>
 
       <div class="f">
-        <label for="beef">كراتين لحم فُتحت</label>
-        <input type="number" inputmode="decimal" step="0.1" id="beef" placeholder="0.3">
-        <span class="hint">الكرتون 10 كجم · 3 كجم = 0.3</span>
+        <label for="beef">لحم رُكِّب اليوم — كجم</label>
+        <input type="number" inputmode="decimal" step="0.5" id="beef" placeholder="3">
+        <span class="hint">ما وُضع على السيخ فعلًا</span>
       </div>
       <div class="f">
-        <label for="chk">كراتين دجاج فُتحت</label>
-        <input type="number" inputmode="decimal" step="0.1" id="chk" placeholder="0.3 أو 1">
-        <span class="hint">كرتون كامل = 1</span>
+        <label for="chk">دجاج رُكِّب اليوم — كجم</label>
+        <input type="number" inputmode="decimal" step="0.5" id="chk" placeholder="3 أو 10">
+        <span class="hint">الكرتون الكامل 10 كجم</span>
       </div>
 
       <div class="f">
@@ -149,6 +149,12 @@
         <label for="cash">مشتريات نقد — ريال</label>
         <input type="number" inputmode="decimal" id="cash" placeholder="0">
         <span class="hint">خبز · خضار · غاز · بلا فاتورة</span>
+      </div>
+
+      <div class="f full">
+        <label for="am">مبيعات قبل الحادية عشرة صباحًا — ريال (اختياري)</label>
+        <input type="number" inputmode="decimal" id="am" placeholder="من تقرير رواء بالساعة">
+        <span class="hint">يسعّر قرار الفطور — املأه إن توفّر</span>
       </div>
 
       <div class="f full">
@@ -169,6 +175,7 @@
       <div class="tile"><dt>نسبة المواد</dt><dd id="t-pct">—<small>٪</small></dd></div>
       <div class="tile"><dt>لحم بقري</dt><dd id="t-beef">—<small>كجم/يوم</small></dd></div>
       <div class="tile"><dt>دجاج</dt><dd id="t-chk">—<small>كجم/يوم</small></dd></div>
+      <div class="tile"><dt>مبيعات الصباح</dt><dd id="t-am">—<small>ريال/يوم</small></dd></div>
     </dl>
     <div class="verdict" id="verdict">سجّل ثلاثة أيام على الأقل ليظهر الحكم.</div>
   </div>
@@ -183,7 +190,7 @@
 <script>
 "use strict";
 (function(){
-  var PB = 22.63, PC = 23.93, KG = 10;   // سعر الكيلو من 890 كجم موثّقة · الكرتون 10 كجم
+  var PB = 22.63, PC = 23.93;   // سعر الكيلو من 890 كجم موثّقة في فواتير المحل
   var db = null, rows = [];
 
   function el(id){ return document.getElementById(id); }
@@ -211,14 +218,15 @@
       el("t-pct").innerHTML   = '—<small>٪</small>';
       el("t-beef").innerHTML  = '—<small>كجم/يوم</small>';
       el("t-chk").innerHTML   = '—<small>كجم/يوم</small>';
+      el("t-am").innerHTML    = '—<small>ريال/يوم</small>';
       el("verdict").className = "verdict";
       el("verdict").textContent = "سجّل ثلاثة أيام على الأقل ليظهر الحكم.";
       return;
     }
-    var S=0, M=0, B=0, C=0, O=0;
+    var S=0, M=0, B=0, C=0, O=0, A=0;
     rows.forEach(function(r){
-      var mat = (r.beef||0)*KG*PB + (r.chk||0)*KG*PC + (r.inv||0) + (r.cash||0);
-      S += r.sales||0; M += mat; B += (r.beef||0)*KG; C += (r.chk||0)*KG; O += r.ops||0;
+      var mat = (r.beef||0)*PB + (r.chk||0)*PC + (r.inv||0) + (r.cash||0);
+      S += r.sales||0; M += mat; B += r.beef||0; C += r.chk||0; A += r.am||0; O += r.ops||0;
       r._mat = mat;
     });
     var s = S/n, m = M/n, pct = S > 0 ? M/S*100 : 0;
@@ -227,6 +235,7 @@
     el("t-pct").innerHTML   = (S>0 ? fmt(pct,1) : "—") + '<small>٪</small>';
     el("t-beef").innerHTML  = fmt(B/n,1) + '<small>كجم/يوم</small>';
     el("t-chk").innerHTML   = fmt(C/n,1) + '<small>كجم/يوم</small>';
+    el("t-am").innerHTML    = (A>0 ? fmt(A/n) : "—") + '<small>ريال/يوم</small>';
 
     var v = el("verdict");
     if(n < 3){
@@ -258,8 +267,8 @@
       html += '<tr><td class="m">' + (r.date||"") + '</td>' +
               '<td class="m">' + fmt(r.sales) + '</td>' +
               '<td class="m">' + fmt(r.ops) + '</td>' +
-              '<td class="m">' + fmt((r.beef||0)*KG,1) + '</td>' +
-              '<td class="m">' + fmt((r.chk||0)*KG,1) + '</td>' +
+              '<td class="m">' + fmt(r.beef,1) + '</td>' +
+              '<td class="m">' + fmt(r.chk,1) + '</td>' +
               '<td class="m">' + fmt(r._mat) + '</td>' +
               '<td class="m">' + (r.sales>0 ? fmt(p,0) : "—") + '</td>' +
               '<td><span class="del" data-id="' + r.id + '">حذف</span></td></tr>';
@@ -285,13 +294,13 @@
     var id = d.replace(/-/g, "");
     var doc = {
       date: d, sales: num("sales"), ops: num("ops"),
-      beef: num("beef"), chk: num("chk"), inv: num("inv"), cash: num("cash"),
+      beef: num("beef"), chk: num("chk"), inv: num("inv"), cash: num("cash"), am: num("am"),
       note: el("note").value.trim(), savedAt: new Date().toISOString()
     };
     el("save").disabled = true;
     db.collection("daylog").doc(id).set(doc).then(function(){
       msg("حُفظ يوم " + d + " — وصل إلى كلود.");
-      ["sales","ops","beef","chk","inv","cash","note"].forEach(function(k){ el(k).value = ""; });
+      ["sales","ops","beef","chk","inv","cash","am","note"].forEach(function(k){ el(k).value = ""; });
       var t = new Date(d); t.setDate(t.getDate()+1);
       el("d").value = t.toISOString().slice(0,10);
       el("save").disabled = false;
@@ -302,7 +311,7 @@
   });
 
   el("clear").addEventListener("click", function(){
-    ["sales","ops","beef","chk","inv","cash","note"].forEach(function(k){ el(k).value = ""; });
+    ["sales","ops","beef","chk","inv","cash","am","note"].forEach(function(k){ el(k).value = ""; });
   });
 
   el("d").value = new Date().toISOString().slice(0,10);
