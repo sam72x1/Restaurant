@@ -231,16 +231,16 @@
 
   <div class="drop" id="drop">
     <h2>اسحب الملفات هنا</h2>
-    <p>صور، أو ملفات PDF</p>
+    <p>صور · PDF · <strong>وملفات CSV و Excel</strong> من نظام رواء</p>
     <div class="actions">
       <button class="btn btn-primary" id="btn-cam" type="button" disabled>التقاط بالكاميرا</button>
       <button class="btn btn-secondary" id="btn-pick" type="button" disabled>صور من الجهاز</button>
       <button class="btn btn-secondary" id="btn-pdf" type="button" disabled>ملف PDF</button>
-      <button class="btn btn-secondary" id="btn-files" type="button" disabled>تصفّح الملفات</button>
+      <button class="btn btn-secondary" id="btn-files" type="button" disabled>تصفّح الملفات · CSV</button>
     </div>
     <p class="queue" id="queue" hidden></p>
     <p class="limit">جهازك يفشل في تسليم 200 صورة دفعة واحدة. اختر <strong>25 صورة في المرة</strong> — وكرّر؛ المرفوع سابقًا يُتخطّى تلقائيًا</p>
-    <p class="hint" id="hint">لو تجمّد جهازك قبل ظهور أي صف، فالتعليق في مرحلة تحويل الصور داخل النظام نفسه، قبل أن تصل الصفحة. حينها جرّب <strong>«تصفّح الملفات»</strong> فهو يتجاوز تلك المرحلة، أو ارفع من كمبيوتر.</p>
+    <p class="hint" id="hint"><strong>ملف CSV من رواء أدقّ من أي صورة</strong> — يصل كما هو بلا قراءة خط ولا تخمين رقم. استخدم <strong>«تصفّح الملفات»</strong> واختره من مجلد التنزيلات. وهو أيضًا المخرج لو تجمّد جهازك عند تحويل الصور، لأنه يتجاوز تلك المرحلة.</p>
     <input type="file" id="picker" name="picker" multiple accept="image/*" hidden>
     <input type="file" id="pdfpicker" name="pdfpicker" multiple accept="application/pdf,.pdf" hidden>
     <input type="file" id="camera" name="camera" accept="image/*" capture="environment" hidden>
