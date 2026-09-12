@@ -1,0 +1,343 @@
+<title>تفريغ مستندات مشوي كور</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Kufi+Arabic:wght@600;700&display=swap">
+<style>
+  :root{
+    --bg:#F4F7F7; --surface:#FFFFFF; --sunken:#EBF0F1;
+    --ink:#11222A; --ink-2:#4F656E; --ink-3:#7C9099; --line:#D4DFE2; --line-2:#BECCD0;
+    --accent:#0A6068; --accent-ink:#FFFFFF; --accent-soft:#DBEAEB; --accent-line:#96C3C5;
+    --ok:#15653F; --ok-soft:#DBEDE3; --ok-line:#A0CEB6;
+    --warn:#8A5406; --warn-soft:#F6E9D2; --warn-line:#DCBE87;
+    --bad:#962722; --bad-soft:#F6DFDD; --bad-line:#DFA8A4;
+    --r:9px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0B1315; --surface:#131E22; --sunken:#0F191C;
+      --ink:#E1EAEC; --ink-2:#8CA1A8; --ink-3:#687C84; --line:#25353A; --line-2:#32454B;
+      --accent:#49C6CE; --accent-ink:#042227; --accent-soft:#112F34; --accent-line:#1D4850;
+      --ok:#5ACF92; --ok-soft:#0E271C; --ok-line:#1E432E;
+      --warn:#E0A94F; --warn-soft:#281F12; --warn-line:#48381A;
+      --bad:#EF8A84; --bad-soft:#2A1514; --bad-line:#4A2422;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0B1315; --surface:#131E22; --sunken:#0F191C;
+    --ink:#E1EAEC; --ink-2:#8CA1A8; --ink-3:#687C84; --line:#25353A; --line-2:#32454B;
+    --accent:#49C6CE; --accent-ink:#042227; --accent-soft:#112F34; --accent-line:#1D4850;
+    --ok:#5ACF92; --ok-soft:#0E271C; --ok-line:#1E432E;
+    --warn:#E0A94F; --warn-soft:#281F12; --warn-line:#48381A;
+    --bad:#EF8A84; --bad-soft:#2A1514; --bad-line:#4A2422;
+  }
+
+  *{box-sizing:border-box}
+  body{ background:var(--bg); color:var(--ink); margin:0;
+        font-family:"IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;
+        font-size:15.5px; line-height:1.75; -webkit-text-size-adjust:100%; }
+  .page{ direction:rtl; max-width:880px; margin:0 auto; padding-inline:20px; padding-block:38px 80px; }
+  .n{ font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+
+  h1{ font-family:"Noto Kufi Arabic",sans-serif; font-weight:700; font-size:clamp(26px,5.6vw,38px);
+      line-height:1.25; margin:0; letter-spacing:-.015em; text-wrap:balance; }
+  h2{ font-family:"Noto Kufi Arabic",sans-serif; font-weight:700; font-size:19px; margin:0;
+      letter-spacing:-.01em; text-wrap:balance; }
+  h3{ font-size:15.5px; font-weight:600; margin:0; color:var(--ink-2); }
+  p{ margin:0; max-width:68ch; }
+
+  header{ border-bottom:2px solid var(--ink); padding-bottom:22px; }
+  .eyebrow{ font-size:12px; font-weight:600; letter-spacing:.14em; color:var(--accent); margin-bottom:11px; }
+  .sub{ color:var(--ink-2); margin-top:10px; font-size:15px; }
+  .meta{ display:flex; flex-wrap:wrap; gap:6px 20px; margin-top:16px; font-size:12.5px; color:var(--ink-3); }
+  .meta b{ color:var(--ink-2); font-weight:500; }
+
+  section{ margin-top:44px; }
+  .head{ display:flex; align-items:baseline; gap:12px; margin-bottom:16px;
+         border-bottom:1px solid var(--line); padding-bottom:9px; }
+  .head .num{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--accent);
+              font-weight:600; flex:none; }
+  .lede{ color:var(--ink-2); margin-bottom:18px; font-size:15px; }
+
+  .verdict{ border:2px solid var(--accent); background:var(--accent-soft); border-radius:12px;
+            padding:22px 24px; margin-top:30px; }
+  .verdict .tag{ font-size:12px; font-weight:700; letter-spacing:.1em; color:var(--accent); }
+  .verdict .big{ font-family:"Noto Kufi Arabic",sans-serif; font-size:clamp(20px,4.2vw,26px);
+                 font-weight:700; line-height:1.45; margin:8px 0 12px; color:var(--ink); text-wrap:balance; }
+  .verdict p{ color:var(--ink-2); font-size:14.5px; }
+  .vgrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px;
+          background:var(--accent-line); border:1px solid var(--accent-line); border-radius:var(--r);
+          overflow:hidden; margin-top:18px; }
+  .vcell{ background:var(--surface); padding:12px 14px; }
+  .vcell dt{ font-size:11.5px; color:var(--ink-2); margin-bottom:3px; }
+  .vcell dd{ margin:0; font-size:21px; font-weight:600; line-height:1.15;
+             font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; }
+  .vcell dd small{ font-size:12px; font-weight:400; color:var(--ink-2); margin-inline-start:4px;
+                   font-family:"IBM Plex Sans Arabic",sans-serif; }
+
+  .tw{ overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
+  table{ border-collapse:collapse; width:100%; font-size:14.5px; }
+  th,td{ padding:9px 13px; text-align:right; border-bottom:1px solid var(--line); }
+  thead th{ background:var(--sunken); font-size:12px; font-weight:600; color:var(--ink-2);
+            letter-spacing:.04em; white-space:nowrap; }
+  tbody tr:last-child td{ border-bottom:0; }
+  td.f{ font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  tr.total td{ background:var(--sunken); font-weight:600; border-top:1.5px solid var(--line-2); }
+  tr.hit td{ background:var(--ok-soft); font-weight:600; }
+  tr.gap td{ background:var(--bad-soft); }
+  td.pos{ color:var(--ok); } td.negc{ color:var(--bad); }
+  .muted{ color:var(--ink-3); font-size:13px; }
+
+  .note{ border-inline-start:3px solid var(--accent); background:var(--accent-soft);
+         padding:13px 16px; border-radius:0 var(--r) var(--r) 0; font-size:14.5px; margin-top:16px; }
+  .note.w{ border-color:var(--warn); background:var(--warn-soft); }
+  .note.b{ border-color:var(--bad); background:var(--bad-soft); }
+  .note.o{ border-color:var(--ok); background:var(--ok-soft); }
+  .note strong{ color:var(--ink); }
+
+  /* شريط التغطية الشهرية */
+  .cov{ display:grid; grid-template-columns:repeat(6,1fr); gap:7px; margin-top:6px; }
+  .cm{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+       padding:10px 8px 11px; text-align:center; display:flex; flex-direction:column; gap:7px;
+       align-items:center; justify-content:flex-end; }
+  .cm.hole{ border-color:var(--bad-line); background:var(--bad-soft); }
+  .cm .bar{ width:100%; background:var(--accent); border-radius:3px; min-height:3px; }
+  .cm.hole .bar{ background:repeating-linear-gradient(45deg,var(--bad-line),var(--bad-line) 3px,transparent 3px,transparent 7px); }
+  .cm .amt{ font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:600;
+            font-variant-numeric:tabular-nums; }
+  .cm .mo{ font-size:11.5px; color:var(--ink-2); }
+  .cm .iv{ font-size:10.5px; color:var(--ink-3); }
+  @media (max-width:600px){ .cov{ grid-template-columns:repeat(3,1fr); } }
+
+  .fork{ display:grid; grid-template-columns:1fr 1fr; gap:13px; margin-top:16px; }
+  @media (max-width:600px){ .fork{ grid-template-columns:1fr; } }
+  .br{ border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:17px 19px; }
+  .br.good{ border-color:var(--ok-line); background:var(--ok-soft); }
+  .br.bad{ border-color:var(--bad-line); background:var(--bad-soft); }
+  .br .lbl{ font-size:12px; font-weight:600; letter-spacing:.06em; margin-bottom:5px; }
+  .br.good .lbl{ color:var(--ok); } .br.bad .lbl{ color:var(--bad); }
+  .br .val{ font-family:"IBM Plex Mono",monospace; font-size:30px; font-weight:600;
+            font-variant-numeric:tabular-nums; line-height:1.05; }
+  .br .val small{ font-size:13px; font-weight:400; color:var(--ink-2);
+                  font-family:"IBM Plex Sans Arabic",sans-serif; margin-inline-start:5px; }
+  .br .desc{ font-size:13.5px; color:var(--ink-2); margin-top:8px; line-height:1.65; }
+
+  .steps{ list-style:none; counter-reset:s; padding:0; margin:0;
+          display:flex; flex-direction:column; gap:10px; }
+  .steps li{ counter-increment:s; display:flex; gap:12px; background:var(--surface);
+             border:1px solid var(--line); border-radius:var(--r); padding:13px 16px; }
+  .steps li::before{ content:counter(s); font-family:"IBM Plex Mono",monospace; font-weight:600;
+                     color:var(--accent); flex:none; font-size:13px; padding-top:2px; }
+  .steps b{ display:block; font-weight:600; font-size:14.5px; }
+  .steps span{ display:block; color:var(--ink-2); font-size:13.5px; margin-top:3px; }
+
+  footer{ margin-top:54px; padding-top:20px; border-top:1px solid var(--line);
+          color:var(--ink-3); font-size:12.5px; line-height:1.9; }
+</style>
+
+<div class="page">
+
+  <header>
+    <div class="eyebrow">تفريغ مستندات · الدفعة الثانية</div>
+    <h1>203 مستندًا — وسؤال واحد يقرّر الصفقة</h1>
+    <p class="sub">تفريغ كامل لمستندات مشوي كور: 102 فاتورة مورّد بتفصيل 318 صنفًا، و42 موازنة مدى، وثلاثة تقارير صندوق، وتسع تذاكر توصيل.</p>
+    <div class="meta">
+      <span><b>المستندات:</b> <span class="n">203</span> · تالفة <span class="n">0</span></span>
+      <span><b>مدى التواريخ:</b> <span class="n" dir="ltr">2026-04-08 → 2026-09-10</span></span>
+      <span><b>تحقق مستقل:</b> تفريغان منفصلان تطابقا رقمًا برقم</span>
+    </div>
+  </header>
+
+  <div class="verdict">
+    <div class="tag">إجابة سؤالك</div>
+    <div class="big">المواد تكلّفك بين 8,800 و12,800 ريال شهريًا — والفارق بين الرقمين ليس دقّة حساب، بل تناقض حقيقي في المستندات</div>
+    <p>المشتريات الموثّقة <strong>45,606 ريالًا</strong> على 102 فاتورة. لكن توزيعها الزمني غير متّسق: أبريل ومايو ويونيو مغطّاة بكثافة، <strong>ويوليو غائب تمامًا</strong>، وأغسطس وسبتمبر شبه فارغين. وهذا يفتح احتمالين متعارضين — أحدهما يجعل الصفقة أفضل مما قدّرت، والآخر يقتلها.</p>
+    <dl class="vgrid">
+      <div class="vcell"><dt>مشتريات موثّقة</dt><dd>45,606<small>ريال</small></dd></div>
+      <div class="vcell"><dt>فواتير مفرَّغة</dt><dd>102<small>فاتورة</small></dd></div>
+      <div class="vcell"><dt>أصناف مسعّرة</dt><dd>318<small>سطرًا</small></dd></div>
+      <div class="vcell"><dt>لحم شاورما</dt><dd>890<small>كجم</small></dd></div>
+    </dl>
+  </div>
+
+  <section>
+    <div class="head"><span class="num">01</span><h2>ما في الصور — 203 مستندًا مصنّفة</h2></div>
+    <div class="tw"><table>
+      <thead><tr><th>النوع</th><th style="text-align:left">العدد</th><th>ما يعطيه</th></tr></thead>
+      <tbody>
+        <tr><td>فاتورة يدوية</td><td class="f">73</td><td class="muted">مشتريات نقدية بلا أثر ضريبي</td></tr>
+        <tr><td>فاتورة مورّد مطبوعة</td><td class="f">59</td><td class="muted">أصناف وأسعار وحدة ورقم ضريبي</td></tr>
+        <tr><td>موازنة مدى</td><td class="f">42</td><td class="muted">تسويات البطاقات</td></tr>
+        <tr><td>أخرى</td><td class="f">15</td><td class="muted">إيصالات مدى مفردة وأوراق يدوية</td></tr>
+        <tr><td>تذكرة توصيل</td><td class="f">9</td><td class="muted">أسعار المنيو — هنقرستيشن و<strong>Keeta</strong></td></tr>
+        <tr><td>تقرير صندوق بيع</td><td class="f">3</td><td class="muted">مبيعات يومية بتفصيل المدفوعات</td></tr>
+        <tr><td>قائمة طلب يدوية</td><td class="f">2</td><td class="muted">تركيبة سلة المشتريات النقدية</td></tr>
+        <tr class="total"><td>الإجمالي</td><td class="f">203</td><td class="muted">صفر تالفة · صفر مفقودة</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note w"><strong>76 صورة فيها ما تعذّرت قراءته</strong> — 36 مبلغًا أو محتوى، و40 تاريخًا فقط. تُركت حقولها فارغة وموسومة «غير مقروء»، ولم يُخمَّن فيها رقم واحد. فكل ما يلي مبنيّ على ما قُرئ يقينًا.</div>
+    <div class="note o"><strong>ومنصّة توصيل ثانية لم تكن معروفة: Keeta.</strong> كنت أحسب هنقرستيشن وحدها. ستّ تذاكر من Keeta مقابل ثلاث من هنقرستيشن — أي أن قناة التوصيل أوسع مما افترضت، وقيمتها في قرار «سجل جديد أم نقل المؤسسة» أكبر.</div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">02</span><h2>تكلفة المواد — الرقم الذي طلبته</h2></div>
+    <p class="lede">إجابتان، كلٌّ منهما صحيحة على أساسها، والفرق بينهما هو لبّ التقرير:</p>
+    <div class="tw"><table>
+      <thead><tr><th>الأساس</th><th style="text-align:left">المشتريات</th><th style="text-align:left">الأيام</th><th style="text-align:left">يوميًا</th><th style="text-align:left">شهريًا</th><th>٪ من مبيعات 722</th></tr></thead>
+      <tbody>
+        <tr><td>كل الفترة الموثّقة</td><td class="f">45,606</td><td class="f">155</td><td class="f">294</td><td class="f">8,827</td><td class="f">40.8٪</td></tr>
+        <tr class="gap"><td>أبريل–يونيو وحدها</td><td class="f">38,856</td><td class="f">91</td><td class="f">427</td><td class="f">12,810</td><td class="f negc">59.1٪</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note b"><strong>59٪ تكلفة مواد في مطعم شاورما رقم مستحيل.</strong> هامش المساهمة عندها 38٪ لا 59.6٪، والتعادل يقفز من 906 إلى <strong>1,422 ريالًا يوميًا</strong> — أي ضِعف مبيعات اليوم. لو كان هذا الرقم صحيحًا فالمشروع غير قابل للحياة بأي خطة.</div>
+    <div class="note"><strong>وللتخطيط اليوم، استخدم 40.8٪</strong> — وهو متّسق مع 37.4٪ التي استخرجتها من الدفعة الأولى بمصدر مستقل. فعند الهدف 1,200 ريال يوميًا تكون المواد نحو <strong>14,650 ريالًا شهريًا</strong>، وعند التعادل 906 نحو <strong>11,060</strong>.</div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">03</span><h2>ثقب يوليو</h2></div>
+    <p class="lede">توزيع المشتريات الموثّقة على الأشهر — وهو ما يفسّر تباعد الرقمين:</p>
+    <div class="cov">
+      <div class="cm"><div class="amt">12,464</div><div class="bar" style="height:78px"></div><div class="mo">أبريل</div><div class="iv">12 فاتورة</div></div>
+      <div class="cm"><div class="amt">15,034</div><div class="bar" style="height:94px"></div><div class="mo">مايو</div><div class="iv">23 فاتورة</div></div>
+      <div class="cm"><div class="amt">11,358</div><div class="bar" style="height:71px"></div><div class="mo">يونيو</div><div class="iv">10 فواتير</div></div>
+      <div class="cm hole"><div class="amt">0</div><div class="bar" style="height:8px"></div><div class="mo">يوليو</div><div class="iv">لا شيء</div></div>
+      <div class="cm"><div class="amt">1,921</div><div class="bar" style="height:12px"></div><div class="mo">أغسطس</div><div class="iv">6 فواتير</div></div>
+      <div class="cm"><div class="amt">1,912</div><div class="bar" style="height:12px"></div><div class="mo">سبتمبر</div><div class="iv">14 فاتورة</div></div>
+    </div>
+    <div class="note w"><strong>و2,918 ريالًا في 37 فاتورة بلا تاريخ مقروء</strong> — غالبها يدوية. لم تُنسب إلى شهر، فهي خارج الرسم أعلاه وداخل الإجمالي.</div>
+    <div class="note b"><strong>والمورّد الأساسي يختفي بعد يونيو تمامًا.</strong> دار السالمين — 84٪ من مشترياتك — لها <span class="n">9</span> فواتير في أبريل و<span class="n">11</span> في مايو و<span class="n">8</span> في يونيو، ثم <strong>فاتورة واحدة بـ53 ريالًا في أغسطس ولا شيء بعدها</strong>. وفواتير أغسطس وسبتمبر كلها من موردين صغار بمبالغ نقدية متفرقة.</div>
+    <div class="note"><strong>وهذا ليس بالضرورة نقصًا في تصويرك.</strong> النمط — اختفاء مورّد الجملة الرئيسي، ثم شراء يومي متفرق بالنقد من محلات صغيرة — هو التوقيع المعتاد لمحل <strong>انقطع عنه الحساب الآجل</strong>. ويتطابق مع رواية البائع: الولد أدار المحل فتراجع.</div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">04</span><h2>الاختبار الفيزيائي: 890 كيلو لحم</h2></div>
+    <p class="lede">اللحم لا يكذب. هذا أقوى اختبار في التقرير كله، لأنه لا يعتمد على أي رقم مالي:</p>
+    <div class="tw"><table>
+      <thead><tr><th>الشهر</th><th style="text-align:left">لحم شاورما</th><th style="text-align:left">قيمته</th><th style="text-align:left">كل المشتريات</th></tr></thead>
+      <tbody>
+        <tr><td>أبريل</td><td class="f">250 كجم</td><td class="f">6,026</td><td class="f">12,464</td></tr>
+        <tr><td>مايو</td><td class="f">290 كجم</td><td class="f">6,796</td><td class="f">15,034</td></tr>
+        <tr><td>يونيو</td><td class="f">280 كجم</td><td class="f">6,302</td><td class="f">11,358</td></tr>
+        <tr><td>أغسطس</td><td class="f">50 كجم</td><td class="f">1,142</td><td class="f">1,921</td></tr>
+        <tr><td>سبتمبر</td><td class="f">20 كجم</td><td class="f">460</td><td class="f">1,912</td></tr>
+        <tr class="total"><td>الإجمالي</td><td class="f">890 كجم</td><td class="f">20,726</td><td class="f">45,606</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><strong>متوسط سعر كيلو الشاورما: 23.29 ريالًا.</strong> واللحم وحده <strong>45٪</strong> من كل مشترياتك. هذا رقمك المرجعي حين تفاوض محلات الجملة — كل ريال توفّره في الكيلو = نحو 3,500 ريال سنويًا عند الاستهلاك الحالي.</div>
+    <div class="note w"><strong>والشراء منتظم شهرًا بشهر: 250 ثم 290 ثم 280 كيلو.</strong> هذا يُضعف تفسير «تخزين دفعة واحدة» — الاستهلاك منتظم، لا مكدَّس.</div>
+    <p style="margin-top:18px"><strong>820 كيلو في أبريل–يونيو على 84 يومًا.</strong> عند 110 جرامًا للسندويتش يعني ذلك <strong>89 سندويتش شاورما يوميًا</strong>. لكن نظام رواء يسجّل <strong>102.7 صنفًا يوميًا إجمالًا</strong> — والأصناف تشمل المشروبات والبطاطس والإضافات والشاي. فالسندويتشات المسجّلة أقل من ذلك بكثير.</p>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">05</span><h2>التناقض — واحتمالان لا ثالث لهما مريح</h2></div>
+    <p class="lede">اللحم المشترى يفوق ما يفسّره البيع المسجَّل. أحد هذين صحيح:</p>
+    <div class="fork">
+      <div class="br good">
+        <div class="lbl">الاحتمال الأول — لصالحك</div>
+        <div class="val">1,142<small>ريال/يوم</small></div>
+        <div class="desc">المبيعات الحقيقية أعلى من المسجَّل. لو كانت نسبة المواد 37.4٪ صحيحة، فمشتريات أبريل–يونيو تعني مبيعات <b>1,142 ريالًا يوميًا</b> — أي <b>420 ريالًا يوميًا فوق المسجَّل</b>. حينها المحل يتجاوز هدفك أصلًا، والسعر 30 ألفًا سرقة.</div>
+      </div>
+      <div class="br bad">
+        <div class="lbl">الاحتمال الثاني — يقتل الصفقة</div>
+        <div class="val">1,422<small>ريال/يوم</small></div>
+        <div class="desc">تكلفة المواد فعلًا 59٪. حينها هامش المساهمة 38٪، والتعادل <b>1,422 ريالًا يوميًا</b> — ضِعف مبيعات اليوم وأعلى من هدفك 1,200. المشروع غير قابل للحياة بأي فريق وأي خطة.</div>
+      </div>
+    </div>
+    <div class="note b"><strong>وثمّة احتمال ثالث يفسّر كل شيء بلا أن يكون أيٌّ منهما صحيحًا: فرعان.</strong> فواتير الموردين باسم «الحمراء» وتذاكر التوصيل باسم «الهضبة» — وهو تضارب رصدته في الدفعة الأولى ولم يُحسم. لو كانت الفواتير تغذّي فرعين بينما تقرير رواء يغطّي فرعًا واحدًا، فالمشتريات ببساطة <strong>ليست كلها لهذا المحل</strong>، ويسقط التناقض من أصله.</div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">06</span><h2>الورديات الثلاث — ودليل يعاكس ما توقّعت</h2></div>
+    <div class="tw"><table>
+      <thead><tr><th>الوردية</th><th style="text-align:left">المبيعات</th><th style="text-align:left">عمليات</th><th style="text-align:left">أصناف</th><th style="text-align:left">الضريبة</th><th>فرق النقد</th></tr></thead>
+      <tbody>
+        <tr><td>07–08 سبتمبر</td><td class="f">646</td><td class="f">49</td><td class="f">97</td><td class="f negc">0</td><td class="f negc">−51</td></tr>
+        <tr><td>08–09 سبتمبر</td><td class="f">475</td><td class="f">31</td><td class="f">75</td><td class="f negc">0</td><td class="f pos">+10</td></tr>
+        <tr><td>09–11 سبتمبر <span class="muted">(يومان)</span></td><td class="f">1,640</td><td class="f">254</td><td class="f">254</td><td class="f negc">0</td><td class="f">0</td></tr>
+        <tr class="total"><td>أربعة أيام</td><td class="f">2,761</td><td class="f">197</td><td class="f">426</td><td class="f negc">0</td><td class="f">−41</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note o"><strong>صافي الفروق عبر كل وسائل الدفع: 13 ريالًا فقط على أربعة أيام.</strong> العجز النقدي 51 ريالًا في وردية واحدة قابله فائض في الشبكة (+11 و+17) — أي <strong>خطأ في توجيه وسيلة الدفع لا تسريبًا نقديًا</strong>. وهذا يُضعف فرضية «السرقة النقدية» التي بنيتُ عليها سابقًا، ويقوّي فرضيتَي الفرعين أو نقص التغطية.</div>
+    <div class="note w"><strong>لكن العيّنة ثلاث ورديات، كلها سبتمبر — وهو شهر البيع.</strong> لا يصح تعميمها على أبريل–يونيو، ولا على فترة إدارة الابن. بائع يعرض محلّه للبيع يكون في أفضل انضباط.</div>
+    <div class="note"><strong>ومزيج الدفع يكشف بنية مختلفة عمّا ظننت:</strong> رواء باي <strong>64٪</strong> · نقد <strong>23٪</strong> · شبكة <strong>14٪</strong>. ومعدل الأربعة أيام <strong>690 ريالًا يوميًا</strong> — متّسق مع 722 المستخرجة من 160 يومًا.</div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">07</span><h2>تصحيح: متوسط الفاتورة 14 لا 18</h2></div>
+    <p class="lede">رقمٌ استعملتُه في الدراسة كان متحيّزًا، والورديات تكشفه:</p>
+    <div class="tw"><table>
+      <thead><tr><th>المصدر</th><th style="text-align:left">متوسط الفاتورة</th><th>لماذا</th></tr></thead>
+      <tbody>
+        <tr><td>موازنات مدى <span class="muted">(ما استعملتُه)</span></td><td class="f">20.25</td><td class="muted">بطاقات فقط — وفواتير البطاقة أكبر دائمًا</td></tr>
+        <tr class="hit"><td>تقارير الصندوق <span class="muted">(الصحيح)</span></td><td class="f">14.02</td><td class="muted">كل وسائل الدفع · 197 عملية</td></tr>
+        <tr><td>تذاكر التوصيل</td><td class="f">38.44</td><td class="muted">أكبر بـ2.7 مرة من فاتورة الصالة</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><strong>الأثر:</strong> طلباتك اليومية <strong>نحو 50 لا 40</strong>، ومتوسط الفاتورة <strong>14 لا 18</strong>. الإيراد نفسه لم يتغيّر — لكن بنيته اختلفت: <strong>زبائن أكثر بفاتورة أصغر</strong>. والقفزة من 14 إلى 18 أسهل بكثير من القفزة من 18 إلى 24.</div>
+    <div class="note o"><strong>وفاتورة التوصيل 38 ريالًا — 2.7 ضعف فاتورة الصالة.</strong> هذه أرخص رافعة في يدك: الزبون نفسه يدفع أكثر حين يطلب من التطبيق. توسيع التوصيل لا يحتاج ريال تطوير.</div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">08</span><h2>المنيو — أسعار استُخرجت من تذاكر التوصيل</h2></div>
+    <p class="lede">لم يصلني منيو، لكن التذاكر تحمل الأسعار. وفاتورة بيع واحدة من الصالة كشفت فارق التطبيق:</p>
+    <div class="tw"><table>
+      <thead><tr><th>الصنف</th><th style="text-align:left">سعر التطبيق</th><th style="text-align:left">سعر الصالة</th><th>الفارق</th></tr></thead>
+      <tbody>
+        <tr class="hit"><td>شاورما صاروخ</td><td class="f">11.00</td><td class="f">9.00</td><td class="f pos">+22٪</td></tr>
+        <tr><td>شاورما عربي دبل</td><td class="f">26.00</td><td class="f muted">—</td><td class="muted">—</td></tr>
+        <tr><td>شاورما عربي لحم كبير</td><td class="f">25.00</td><td class="f muted">—</td><td class="muted">—</td></tr>
+        <tr><td>شاورما باشكا</td><td class="f">22.50</td><td class="f muted">—</td><td class="muted">—</td></tr>
+        <tr><td>شاورما عربي لحم صغير</td><td class="f">17.50</td><td class="f muted">—</td><td class="muted">—</td></tr>
+        <tr><td>شاورما لحم كبير</td><td class="f">15.00</td><td class="f muted">—</td><td class="muted">—</td></tr>
+        <tr><td>لحم مقلقل</td><td class="f">8.75</td><td class="f muted">—</td><td class="muted">—</td></tr>
+        <tr><td>صحن بطاطس · شكشوكة · شاورما خبز شامي صغير</td><td class="f">6.25</td><td class="f muted">—</td><td class="muted">—</td></tr>
+        <tr><td>ديو</td><td class="f">4.00</td><td class="f muted">—</td><td class="muted">—</td></tr>
+        <tr><td>ساندويتش بيض</td><td class="f">3.75</td><td class="f muted">—</td><td class="muted">—</td></tr>
+        <tr><td>شاهي · مياه</td><td class="f muted">—</td><td class="f">1.00</td><td class="muted">—</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note b"><strong>وهنا يظهر خلل التسعير:</strong> شاورما صاروخ بـ<strong>9 ريالات</strong> في الصالة، ولحمها وحده نحو <strong>2.3 ريال</strong> عند 100 جرام. أضف الخبز والصلصة والخضار والتغليف فتقترب من 4 ريالات — أي <strong>45٪ تكلفة مواد على أكثر أصنافك مبيعًا</strong>، بينما الأصناف الكبيرة (17.50 إلى 26) هامشها أفضل بكثير.</div>
+    <div class="note o"><strong>أرخص تحسين في المحل كله:</strong> ادفع الزبون من الصاروخ إلى العربي. وجبة بصاروخ + بطاطس + مشروب بسعر 15 تبيع أكثر من صاروخ بـ9، وتكلفتها الإضافية أقل من الفرق. هذا <strong>لا يحتاج ريال تطوير ولا زبونًا جديدًا</strong>.</div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">09</span><h2>المورّدون — وأين تفاوض</h2></div>
+    <div class="tw"><table>
+      <thead><tr><th>المورّد</th><th style="text-align:left">المبلغ</th><th style="text-align:left">٪</th><th style="text-align:left">فواتير</th><th>ملاحظة</th></tr></thead>
+      <tbody>
+        <tr><td>دار السالمين التجارية</td><td class="f">38,309</td><td class="f">84.0٪</td><td class="f">30</td><td class="muted negc">تختفي بعد يونيو</td></tr>
+        <tr><td class="muted">فواتير يدوية بلا اسم</td><td class="f">2,402</td><td class="f">5.3٪</td><td class="f">40</td><td class="muted">مشتريات نقدية متفرقة</td></tr>
+        <tr><td>سفير الأطعمة</td><td class="f">1,385</td><td class="f">3.0٪</td><td class="f">3</td><td class="muted">—</td></tr>
+        <tr><td>أطياب النماص — سوق الخضار</td><td class="f">1,215</td><td class="f">2.7٪</td><td class="f">6</td><td class="muted ">مورّد سبتمبر الجديد</td></tr>
+        <tr><td>حميد عودة العطوي — غاز</td><td class="f">795</td><td class="f">1.7٪</td><td class="f">3</td><td class="muted">ليست مادة غذائية</td></tr>
+        <tr><td>لؤلؤة الجنات / خيمة الضيافة</td><td class="f">943</td><td class="f">2.1٪</td><td class="f">6</td><td class="muted">بهارات وصلصات</td></tr>
+        <tr><td class="muted">سبعة موردين أصغر</td><td class="f">557</td><td class="f">1.2٪</td><td class="f">14</td><td class="muted">تغليف ومنظفات</td></tr>
+        <tr class="total"><td>الإجمالي</td><td class="f">45,606</td><td class="f">100٪</td><td class="f">102</td><td class="muted">—</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><strong>أكبر خمسة أصناف تلتهم 60٪ من إنفاقك:</strong> شاورما لحم <span class="n">9,062</span> · شاورما جي سي برازيلي <span class="n">8,200</span> · بطاطس مايدا <span class="n">4,011</span> · لحم بقر توب سايد <span class="n">3,169</span> · صحون وتغليف <span class="n">2,402</span>. <strong>فاوض على هذه الخمسة وحدها</strong> — الباقي لا يستحق وقتك.</div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">10</span><h2>ما يحسم السؤال — ثلاثة مستندات</h2></div>
+    <p class="lede">لا تفاوض على السعر قبل أن تعرف أيّ الاحتمالين صحيح. هذه هي الطريق الأقصر:</p>
+    <ol class="steps">
+      <li><div><b>اسأل البائع سؤالًا واحدًا مباشرًا: هل لك أو كان لك فرع ثانٍ؟</b><span>مجاني وفوري، ويحسم الاحتمال الثالث كله. ولو كانت الفواتير تغذّي فرعين، فكل هذا التقرير يُعاد بناؤه على نصف الأرقام.</span></div></li>
+      <li><div><b>تقارير صندوق البيع لأبريل ومايو ويونيو</b><span>عندي ثلاث ورديات من سبتمبر فقط. تقارير تلك الأشهر تخبرني مبيعاتها الحقيقية، فأقسم 427 ريالًا من المشتريات على مبيعات تلك الفترة نفسها بدل المتوسط. <b>هذا وحده يحسم الاحتمالين الأول والثاني.</b></span></div></li>
+      <li><div><b>فواتير يوليو — أو تأكيد أنها غير موجودة</b><span>لو أكّد البائع أن يوليو بلا مشتريات فعلًا، فقد توقّف المحل أو تراجع بشدة، وتلك معلومة تفاوضية بحد ذاتها. ولو وُجدت فالفجوة نقص تصوير لا أكثر.</span></div></li>
+    </ol>
+    <div class="note w"><strong>وثلاثة أخرى تُحسّن الدقة ولا تحسم:</strong> جرد مخزون في تاريخين (يحوّل المشتريات إلى استهلاك فعلي) · المنيو بأسعاره كاملًا · كشف حساب متجرَي هنقرستيشن وKeeta.</div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">11</span><h2>ما لم يتغيّر</h2></div>
+    <div class="note b"><strong>الضريبة صفر في الورديات الثلاث كلها.</strong> سبتمبر 2026، والمنشأة مسجّلة، ورقمها الضريبي على فواتير مورّديها. هذا ليس سهوًا قديمًا — هو <strong>ممارسة مستمرة حتى اليوم</strong>. وكل يوم يمرّ يزيد الأصل والغرامة.</div>
+    <div class="note"><strong>وما بُني عليه في الدراسة الرئيسية لم يهتزّ:</strong> الإيجار 2,000 شاملًا المرافق، والفريق بأربعة، والتعادل 906 — <strong>شرط أن تكون نسبة المواد 40٪ لا 59٪</strong>. وهذا بالضبط ما تحسمه المستندات الثلاثة أعلاه.</div>
+  </section>
+
+  <footer>
+    الأساس: 203 مستندًا مصوَّرًا · 102 فاتورة مورّد بتفصيل 318 صنفًا · 42 موازنة مدى · 9 تذاكر توصيل · 3 تقارير صندوق بيع.<br>
+    التفريغ جرى مرتين مستقلتين على أربع صور ضابطة، وتطابقت النتيجتان رقمًا برقم. وما تعذّرت قراءته تُرك فارغًا وموسومًا — <strong>لم يُخمَّن رقم واحد</strong>.<br>
+    السجلات التفصيلية: <span class="n" dir="ltr">data/extracted/purchases.csv</span> · <span class="n" dir="ltr">shifts.csv</span> · <span class="n" dir="ltr">batch2-index.csv</span> · <span class="n" dir="ltr">batch2-other.csv</span>
+  </footer>
+
+</div>
