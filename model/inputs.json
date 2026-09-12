@@ -6,9 +6,9 @@
     "ما عدا ذلك تقديرات مُعلَّنة"
   ],
   "meta": {
-    "project_name": "استحواذ على مطعم مشوي كور — الحمراء، تبوك",
+    "project_name": "استحواذ وتطوير — مشوي كور، الحمراء بتبوك",
     "location": "تبوك — حي الحمراء",
-    "concept": "شاورما ووجبات سريعة",
+    "concept": "شاورما ووجبات سريعة + جلسات خارجية وبث مباريات",
     "area_sqm": null,
     "seats": null,
     "opened_year": null
@@ -16,19 +16,78 @@
   "revenue": {
     "operating_days_per_month": 30,
     "channels": [
-      { "name": "مبيعات النظام (صالة وسفري)", "orders_per_day": {"v": 40, "src": "verified", "ref": "تقرير رواء: 722 ريال/يوم ÷ 18.05 متوسط العملية"}, "avg_ticket_sar": {"v": 18.05, "src": "verified", "ref": "موازنات مدى: 1318 ريال ÷ 73 عملية"}, "commission_pct": 0 }
+      {
+        "name": "مبيعات النظام (صالة وسفري)",
+        "orders_per_day": {
+          "v": 77.6,
+          "src": "estimated",
+          "ref": "هدف ما بعد التطوير: 1,400 ريال/يوم"
+        },
+        "avg_ticket_sar": {
+          "v": 18.05,
+          "src": "verified",
+          "ref": "موازنات مدى: 1318 ريال ÷ 73 عملية"
+        },
+        "commission_pct": 0
+      }
     ]
   },
   "cogs": {
-    "food_cost_pct": {"v": 37.4, "src": "verified", "ref": "10,540 ريال مشتريات ÷ 39 يومًا ÷ 722 ريال مبيعات يومية"},
+    "food_cost_pct": {
+      "v": 37.4,
+      "src": "verified",
+      "ref": "10,540 ريال مشتريات ÷ 39 يومًا ÷ 722 ريال مبيعات يومية"
+    },
     "packaging_cost_pct": 3
   },
   "staff": [
-    { "role": "عامل شاورما", "count": 1, "salary_sar": {"v": 2200, "src": "estimated"}, "is_saudi": false, "housing_sar": 600, "gov_fees_monthly_sar": 800, "other_monthly_sar": 0 }
+    {
+      "role": "تركي — شاورما",
+      "count": 1,
+      "salary_sar": 3500,
+      "is_saudi": false,
+      "housing_sar": 600,
+      "gov_fees_monthly_sar": 800,
+      "other_monthly_sar": 0
+    },
+    {
+      "role": "هندي ١",
+      "count": 1,
+      "salary_sar": 750,
+      "is_saudi": false,
+      "housing_sar": 600,
+      "gov_fees_monthly_sar": 800,
+      "other_monthly_sar": 0
+    },
+    {
+      "role": "هندي ٢",
+      "count": 1,
+      "salary_sar": 750,
+      "is_saudi": false,
+      "housing_sar": 600,
+      "gov_fees_monthly_sar": 800,
+      "other_monthly_sar": 0
+    },
+    {
+      "role": "مشرف",
+      "count": 1,
+      "salary_sar": 1500,
+      "is_saudi": false,
+      "housing_sar": 600,
+      "gov_fees_monthly_sar": 800,
+      "other_monthly_sar": 0
+    }
   ],
   "opex_monthly": {
-    "rent_sar": {"v": 2000, "src": "claimed", "ref": "من المشتري — يحتاج نسخة عقد إيجار موثق"},
-    "utilities_sar": {"v": 1200, "src": "estimated"},
+    "rent_sar": {
+      "v": 2000,
+      "src": "claimed",
+      "ref": "من المشتري — يحتاج نسخة عقد إيجار موثق"
+    },
+    "utilities_sar": {
+      "v": 1200,
+      "src": "estimated"
+    },
     "gov_fees_sar": 300,
     "marketing_sar": 0,
     "maintenance_sar": 300,
@@ -38,16 +97,32 @@
     "accounting_sar": 300,
     "equipment_reserve_sar": 300,
     "owner_or_manager_salary_sar": 0,
-    "other_sar": 200
+    "other_sar": {
+      "v": 2000,
+      "src": "estimated",
+      "ref": "اشتراك بي إن التجاري — افتراضي حتى يصل عرض السعر"
+    }
   },
   "acquisition": {
-    "purchase_price_sar": {"v": 30000, "src": "claimed", "ref": "السعر المطروح"},
+    "purchase_price_sar": {
+      "v": 30000,
+      "src": "claimed",
+      "ref": "السعر المطروح"
+    },
     "inventory_sar": null,
     "equipment_fair_value_sar": null,
-    "renovation_capex_sar": null,
+    "renovation_capex_sar": {
+      "v": 20000,
+      "src": "estimated",
+      "ref": "جلسات خارجية ومظلات وشاشة ورسيفر"
+    },
     "equipment_replacement_sar": null,
     "license_transfer_fees_sar": 2000,
-    "working_capital_sar": 15000,
+    "working_capital_sar": {
+      "v": 22400,
+      "src": "estimated",
+      "ref": "تمويل خسائر ثمانية أشهر حتى التعادل"
+    },
     "rent_deposit_sar": 2000,
     "contingency_sar": 5000
   },
@@ -64,5 +139,6 @@
     "valuation_multiple_low": 1.0,
     "valuation_multiple_high": 2.0,
     "terminal_value_multiple": 1.0
-  }
+  },
+  "_سيناريو": "ما بعد التدرّج عند 1,400 ريال يوميًا. نقطة البداية المثبتة 722 ريال/يوم."
 }

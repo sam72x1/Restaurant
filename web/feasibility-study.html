@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Kufi+Arabic:wght@600;700&display=swap">
 <style>
   :root{
-    --bg:#F4F7F7; --surface:#FFFFFF; --sunken:#EBF0F1; --raised:#FCFDFD;
+    --bg:#F4F7F7; --surface:#FFFFFF; --sunken:#EBF0F1;
     --ink:#11222A; --ink-2:#4F656E; --ink-3:#7C9099; --line:#D4DFE2; --line-2:#BECCD0;
     --accent:#0A6068; --accent-ink:#FFFFFF; --accent-soft:#DBEAEB; --accent-line:#96C3C5;
     --ok:#15653F; --ok-soft:#DBEDE3; --ok-line:#A0CEB6;
@@ -14,7 +14,7 @@
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --bg:#0B1315; --surface:#131E22; --sunken:#0F191C; --raised:#18262B;
+      --bg:#0B1315; --surface:#131E22; --sunken:#0F191C;
       --ink:#E1EAEC; --ink-2:#8CA1A8; --ink-3:#687C84; --line:#25353A; --line-2:#32454B;
       --accent:#49C6CE; --accent-ink:#042227; --accent-soft:#112F34; --accent-line:#1D4850;
       --ok:#5ACF92; --ok-soft:#0E271C; --ok-line:#1E432E;
@@ -23,7 +23,7 @@
     }
   }
   :root[data-theme="dark"]{
-    --bg:#0B1315; --surface:#131E22; --sunken:#0F191C; --raised:#18262B;
+    --bg:#0B1315; --surface:#131E22; --sunken:#0F191C;
     --ink:#E1EAEC; --ink-2:#8CA1A8; --ink-3:#687C84; --line:#25353A; --line-2:#32454B;
     --accent:#49C6CE; --accent-ink:#042227; --accent-soft:#112F34; --accent-line:#1D4850;
     --ok:#5ACF92; --ok-soft:#0E271C; --ok-line:#1E432E;
@@ -58,24 +58,22 @@
               font-weight:600; flex:none; }
   .lede{ color:var(--ink-2); margin-bottom:18px; font-size:15px; }
 
-  /* الحكم */
-  .verdict{ border:2px solid var(--ok); background:var(--ok-soft); border-radius:12px;
+  .verdict{ border:2px solid var(--accent); background:var(--accent-soft); border-radius:12px;
             padding:22px 24px; margin-top:30px; }
-  .verdict .tag{ font-size:12px; font-weight:700; letter-spacing:.1em; color:var(--ok); }
-  .verdict .big{ font-family:"Noto Kufi Arabic",sans-serif; font-size:clamp(21px,4.4vw,27px);
-                 font-weight:700; line-height:1.4; margin:8px 0 12px; color:var(--ink); text-wrap:balance; }
+  .verdict .tag{ font-size:12px; font-weight:700; letter-spacing:.1em; color:var(--accent); }
+  .verdict .big{ font-family:"Noto Kufi Arabic",sans-serif; font-size:clamp(20px,4.2vw,26px);
+                 font-weight:700; line-height:1.45; margin:8px 0 12px; color:var(--ink); text-wrap:balance; }
   .verdict p{ color:var(--ink-2); font-size:14.5px; }
-  .vgrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:1px;
-          background:var(--ok-line); border:1px solid var(--ok-line); border-radius:var(--r);
+  .vgrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:1px;
+          background:var(--accent-line); border:1px solid var(--accent-line); border-radius:var(--r);
           overflow:hidden; margin-top:18px; }
   .vcell{ background:var(--surface); padding:12px 14px; }
   .vcell dt{ font-size:11.5px; color:var(--ink-2); margin-bottom:3px; }
-  .vcell dd{ margin:0; font-size:22px; font-weight:600; line-height:1.15;
+  .vcell dd{ margin:0; font-size:21px; font-weight:600; line-height:1.15;
              font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; }
   .vcell dd small{ font-size:12px; font-weight:400; color:var(--ink-2); margin-inline-start:4px;
                    font-family:"IBM Plex Sans Arabic",sans-serif; }
 
-  /* جداول */
   .tw{ overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
   table{ border-collapse:collapse; width:100%; font-size:14.5px; }
   th,td{ padding:10px 14px; text-align:right; border-bottom:1px solid var(--line); }
@@ -84,34 +82,36 @@
   tbody tr:last-child td{ border-bottom:0; }
   td.f{ font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap; }
   tr.total td{ background:var(--sunken); font-weight:600; border-top:1.5px solid var(--line-2); }
+  tr.hit td{ background:var(--ok-soft); font-weight:600; }
   tr.neg td.f{ color:var(--bad); }
-  td.pos{ color:var(--ok); }
+  td.pos{ color:var(--ok); } td.negc{ color:var(--bad); }
 
-  /* شارة درجة الإثبات */
   .g{ display:inline-block; font-size:10.5px; font-weight:600; padding:1px 7px; border-radius:4px;
       border:1px solid; white-space:nowrap; vertical-align:1px; }
   .g-v{ color:var(--ok); background:var(--ok-soft); border-color:var(--ok-line); }
   .g-c{ color:var(--warn); background:var(--warn-soft); border-color:var(--warn-line); }
   .g-e{ color:var(--ink-2); background:var(--sunken); border-color:var(--line-2); }
 
-  /* التحقق المزدوج */
-  .cross{ display:grid; grid-template-columns:1fr auto 1fr; gap:14px; align-items:stretch;
-          margin-top:8px; }
-  .cbox{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:16px 18px; }
-  .cbox .lbl{ font-size:12px; color:var(--ink-2); margin-bottom:6px; }
-  .cbox .val{ font-family:"IBM Plex Mono",monospace; font-size:27px; font-weight:600;
-              font-variant-numeric:tabular-nums; line-height:1.1; }
-  .cbox .via{ font-size:12px; color:var(--ink-3); margin-top:7px; line-height:1.6; }
-  .cjoin{ display:flex; flex-direction:column; align-items:center; justify-content:center;
-          color:var(--accent); font-size:12px; font-weight:600; gap:4px; padding:0 2px; }
-  .cjoin .eq{ font-family:"IBM Plex Mono",monospace; font-size:24px; line-height:1; }
-  @media (max-width:560px){ .cross{ grid-template-columns:1fr; } .cjoin{ flex-direction:row; gap:9px; } }
+  .twin{ display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+  @media (max-width:560px){ .twin{ grid-template-columns:1fr; } }
+  .tgt{ border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:17px 19px; }
+  .tgt.survive{ border-color:var(--warn-line); background:var(--warn-soft); }
+  .tgt.win{ border-color:var(--ok-line); background:var(--ok-soft); }
+  .tgt .lbl{ font-size:12px; font-weight:600; letter-spacing:.06em; margin-bottom:5px; }
+  .tgt.survive .lbl{ color:var(--warn); } .tgt.win .lbl{ color:var(--ok); }
+  .tgt .val{ font-family:"IBM Plex Mono",monospace; font-size:32px; font-weight:600;
+             font-variant-numeric:tabular-nums; line-height:1.05; }
+  .tgt .val small{ font-size:13px; font-weight:400; color:var(--ink-2);
+                   font-family:"IBM Plex Sans Arabic",sans-serif; margin-inline-start:5px; }
+  .tgt .desc{ font-size:13.5px; color:var(--ink-2); margin-top:8px; line-height:1.65; }
 
   .note{ border-inline-start:3px solid var(--accent); background:var(--accent-soft);
          padding:13px 16px; border-radius:0 var(--r) var(--r) 0; font-size:14.5px; margin-top:16px; }
+  .note.w{ border-color:var(--warn); background:var(--warn-soft); }
+  .note.b{ border-color:var(--bad); background:var(--bad-soft); }
+  .note.o{ border-color:var(--ok); background:var(--ok-soft); }
   .note strong{ color:var(--ink); }
 
-  /* المخاطر */
   .risks{ display:flex; flex-direction:column; gap:11px; }
   .risk{ background:var(--surface); border:1px solid var(--line); border-inline-start-width:4px;
          border-radius:var(--r); padding:14px 17px; }
@@ -129,11 +129,10 @@
   .risk .fix{ font-size:13.5px; margin-top:7px; color:var(--ink); }
   .risk .fix b{ color:var(--accent); font-weight:600; }
 
-  /* الخطوات */
   ol.steps{ list-style:none; counter-reset:s; margin:0; padding:0;
             display:flex; flex-direction:column; gap:10px; }
   ol.steps li{ counter-increment:s; background:var(--surface); border:1px solid var(--line);
-               border-radius:var(--r); padding:13px 16px 13px 16px; display:grid;
+               border-radius:var(--r); padding:13px 16px; display:grid;
                grid-template-columns:auto 1fr; gap:13px; align-items:start; font-size:14.5px; }
   ol.steps li::before{ content:counter(s); font-family:"IBM Plex Mono",monospace; font-weight:600;
                        color:var(--accent-ink); background:var(--accent); width:23px; height:23px;
@@ -141,8 +140,15 @@
   ol.steps b{ font-weight:600; }
   ol.steps span{ color:var(--ink-2); display:block; font-size:13.5px; margin-top:2px; }
 
-  .limits{ background:var(--sunken); border:1px solid var(--line); border-radius:var(--r);
-           padding:18px 20px; }
+  .kill{ border:2px dashed var(--bad); background:var(--bad-soft); border-radius:12px; padding:20px 22px; }
+  .kill .t{ font-family:"Noto Kufi Arabic",sans-serif; font-weight:700; font-size:18px; color:var(--bad);
+            margin-bottom:9px; }
+  .kill p{ font-size:14.5px; color:var(--ink); }
+  .kill .rule{ font-family:"IBM Plex Mono",monospace; font-size:17px; font-weight:600; color:var(--ink);
+               background:var(--surface); border:1px solid var(--bad-line); border-radius:var(--r);
+               padding:12px 15px; margin:13px 0; line-height:1.6; }
+
+  .limits{ background:var(--sunken); border:1px solid var(--line); border-radius:var(--r); padding:18px 20px; }
   .limits ul{ margin:10px 0 0; padding-inline-start:19px; color:var(--ink-2); font-size:14.5px; }
   .limits li{ margin-bottom:6px; }
 
@@ -153,204 +159,266 @@
 
 <div class="page">
   <header>
-    <div class="eyebrow">دراسة جدوى استحواذ</div>
+    <div class="eyebrow">دراسة جدوى استحواذ وتطوير</div>
     <h1>مشوي كور — الحمراء، تبوك</h1>
-    <p class="sub">تقييم شراء مطعم شاورما قائم بسعر 30,000 ريال، مبنيًا على 126 مستندًا مصوَّرًا وتقرير نظام نقاط البيع.</p>
+    <p class="sub">شراء مطعم شاورما قائم بـ30,000 ريال وتحويله إلى مقهى مباريات بجلسات خارجية، بإدارة مشرف لا بحضور المالك.</p>
     <div class="meta">
       <span><b>الكيان:</b> مؤسسة حمد عبدالحميد الهقاص</span>
       <span><b>الرقم الضريبي:</b> <span class="n">314335950400003</span></span>
-      <span><b>فترة البيانات:</b> <span class="n" dir="ltr">2026-04-01 → 2026-09-07</span></span>
+      <span><b>بيانات الأساس:</b> <span class="n" dir="ltr">2026-04-01 → 2026-09-07</span></span>
     </div>
   </header>
 
   <div class="verdict">
     <div class="tag">التوصية</div>
-    <div class="big">اشترِ — بشرط احتجاز 10,000 ريال حتى تثبت المخالصة الضريبية</div>
-    <p>السعر المطروح أقل من نطاق التقييم العادل، والإيراد مثبت بطريقتين مستقلتين تتفقان. الخطر لم يعد في السعر بل في الالتزامات التي قد تأتي معه — وأكبرها ضريبة غير محتسبة على مبيعات خمسة أشهر.</p>
+    <div class="big">امضِ — لكن جهّز 81,000 ريال لا 30,000، واستهدف 1,400 ريال يوميًا لا التعادل</div>
+    <p>الإيراد الحالي مثبت بمصدرين مستقلين، والسعر أقل من التقييم العادل. لكن خطة التطوير بفريق من أربعة تغيّر طبيعة المشروع: من شراء دخل جاهز إلى <strong>استثمار يُبنى</strong>. وهي مجدية — بشرط أن تموّل فترة البناء وتعرف متى تتوقف.</p>
     <dl class="vgrid">
-      <div class="vcell"><dt>صافي الربح الشهري</dt><dd>4,138<small>ريال</small></dd></div>
-      <div class="vcell"><dt>استرداد رأس المال</dt><dd>13<small>شهرًا</small></dd></div>
-      <div class="vcell"><dt>العائد السنوي</dt><dd>92<small>٪</small></dd></div>
-      <div class="vcell"><dt>هامش الأمان</dt><dd>32<small>٪</small></dd></div>
+      <div class="vcell"><dt>النقد المطلوب</dt><dd>81,000<small>ريال</small></dd></div>
+      <div class="vcell"><dt>التعادل</dt><dd>1,080<small>ريال/يوم</small></dd></div>
+      <div class="vcell"><dt>هدف النجاح</dt><dd>1,400<small>ريال/يوم</small></dd></div>
+      <div class="vcell"><dt>الاسترداد عند الهدف</dt><dd>14<small>شهرًا</small></dd></div>
     </dl>
   </div>
 
   <section>
-    <div class="head"><span class="num">01</span><h2>كيف تحققت من الإيراد</h2></div>
-    <p class="lede">الرقم الذي تنهار عليه أغلب دراسات الجدوى هو الإيراد. تحققت منه بطريقتين لا تعرف إحداهما الأخرى:</p>
-    <div class="cross">
-      <div class="cbox">
-        <div class="lbl">من فواتير الموردين</div>
-        <div class="val">771</div>
-        <div class="via">33 فاتورة ضريبية موثقة = 270 ريال مشتريات يوميًا، مقسومة على نسبة تكلفة مواد 35٪</div>
+    <div class="head"><span class="num">01</span><h2>نقطة البداية — ما تشتريه اليوم</h2></div>
+    <p class="lede">قبل أي خطة، هذا أداء المحل الحالي. رقم الإيراد <strong>مثبت بطريقتين مستقلتين لا تعرف إحداهما الأخرى</strong>:</p>
+    <div class="tw"><table>
+      <thead><tr><th>المؤشر</th><th style="text-align:left">القيمة</th><th>المصدر</th></tr></thead>
+      <tbody>
+        <tr><td>المبيعات اليومية</td><td class="f">722 ريال</td><td>تقرير رواء: 115,500 على 160 يومًا <span class="g g-v">مثبت</span></td></tr>
+        <tr><td>المبيعات اليومية (تحقق مستقل)</td><td class="f">771 ريال</td><td>33 فاتورة مورد ÷ نسبة تكلفة المواد <span class="g g-v">مثبت</span></td></tr>
+        <tr class="total"><td>الفارق بين الطريقتين</td><td class="f pos">6.9٪</td><td>اتفاق يجعل الرقم مثبتًا لا مُدّعى</td></tr>
+        <tr><td>الطلبات اليومية</td><td class="f">40 طلبًا</td><td>103 أصناف يوميًا <span class="g g-v">مثبت</span></td></tr>
+        <tr><td>متوسط الفاتورة</td><td class="f">18.05 ريال</td><td>موازنات مدى: 1,318 ÷ 73 عملية <span class="g g-v">مثبت</span></td></tr>
+        <tr><td>نسبة تكلفة المواد</td><td class="f">37.4٪</td><td>مشتريات موثقة ÷ مبيعات الفترة <span class="g g-v">مثبت</span></td></tr>
+        <tr><td>هامش المساهمة</td><td class="f">59.6٪</td><td>كل ريال إضافي يترك 60 هللة</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note o"><strong>القيمة العادلة 49,653 – 99,306 ريال</strong> بمضاعف صافي الربح. السعر المطروح 30,000 — أي <strong>مضاعف ×0.60</strong>. السعر ليس هو المشكلة في هذه الصفقة.</div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">02</span><h2>خطة التطوير وتكلفتها الحقيقية</h2></div>
+    <p class="lede">الفريق المقترح أربعة، بإشراف مشرف لأن عمل المالك لا يسمح بحضوره. وهذا يغيّر بنية التكلفة جذريًا:</p>
+    <div class="tw"><table>
+      <thead><tr><th>الوظيفة</th><th style="text-align:left">الراتب</th><th style="text-align:left">التكلفة الفعلية</th><th>الفرق</th></tr></thead>
+      <tbody>
+        <tr><td>تركي — شاورما</td><td class="f">3,500</td><td class="f">5,173</td><td class="f" style="color:var(--ink-3)">+1,673</td></tr>
+        <tr><td>هندي ١</td><td class="f">750</td><td class="f">2,208</td><td class="f" style="color:var(--ink-3)">+1,458</td></tr>
+        <tr><td>هندي ٢</td><td class="f">750</td><td class="f">2,208</td><td class="f" style="color:var(--ink-3)">+1,458</td></tr>
+        <tr><td>مشرف</td><td class="f">1,500</td><td class="f">3,017</td><td class="f" style="color:var(--ink-3)">+1,517</td></tr>
+        <tr class="total"><td>الإجمالي</td><td class="f">6,500</td><td class="f">12,607</td><td class="f">+6,107</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note w"><strong>كل عامل وافد يكلّف نحو 1,400 ريال فوق راتبه</strong> — سكن 600 ورسوم حكومية 800 — مهما كان الراتب. لهذا الهندي براتب 750 يكلّفك 2,208، أي ثلاثة أضعاف راتبه. وخفض الرواتب لا يعالج ذلك.</div>
+    <div class="tw" style="margin-top:16px"><table>
+      <thead><tr><th>بنية التكاليف الثابتة الشهرية</th><th style="text-align:left">المبلغ</th><th>الإثبات</th></tr></thead>
+      <tbody>
+        <tr><td>العمالة (أربعة، محمّلة)</td><td class="f">12,607</td><td><span class="g g-e">تقدير</span></td></tr>
+        <tr><td>الإيجار</td><td class="f">2,000</td><td><span class="g g-c">ادعاء</span></td></tr>
+        <tr><td>اشتراك بي إن التجاري</td><td class="f">2,000</td><td><span class="g g-e">افتراضي — يحتاج عرض سعر</span></td></tr>
+        <tr><td>الكهرباء والمياه</td><td class="f">1,200</td><td><span class="g g-e">تقدير</span></td></tr>
+        <tr><td>رسوم ونظام وصيانة ونظافة ومحاسبة وإحلال</td><td class="f">1,500</td><td><span class="g g-e">تقدير</span></td></tr>
+        <tr class="total"><td>إجمالي الثوابت</td><td class="f">19,307</td><td>مقابل 8,472 بخطة مصغّرة</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">03</span><h2>رقمان يحكمان كل شيء</h2></div>
+    <div class="twin">
+      <div class="tgt survive">
+        <div class="lbl">النجاة</div>
+        <div class="val">1,080<small>ريال/يوم</small></div>
+        <div class="desc">التعادل. لا ربح ولا خسارة. يتطلب رفع المبيعات <b>50٪</b> عن الحالي. الوصول إليه ليس نجاحًا — هو التوقف عن النزيف.</div>
       </div>
-      <div class="cjoin"><span class="eq">≈</span><span>فارق 6.9٪</span></div>
-      <div class="cbox">
-        <div class="lbl">من نظام نقاط البيع</div>
-        <div class="val">722</div>
-        <div class="via">تقرير رواء: 115,500 ريال على 160 يومًا، و16,436 صنفًا مباعًا</div>
+      <div class="tgt win">
+        <div class="lbl">النجاح</div>
+        <div class="val">1,400<small>ريال/يوم</small></div>
+        <div class="desc">هنا يبدأ المشروع يستحق الـ81 ألفًا: صافي <b>5,725</b> ريالًا شهريًا واسترداد في <b>14 شهرًا</b>. يتطلب رفعًا <b>94٪</b>.</div>
       </div>
     </div>
-    <div class="note"><strong>لماذا هذا مهم:</strong> المشتريات مصدرها الموردون، والمبيعات مصدرها نظام المطعم. لا أحد منهما يستطيع تجميل الآخر. اتفاقهما ضمن 7٪ يجعل رقم الإيراد <strong>مثبتًا لا مُدّعى</strong> — وهو أقوى ما في هذه الدراسة.</div>
-    <div class="note" style="border-color:var(--warn);background:var(--warn-soft)"><strong>نسبة تكلفة المواد الفعلية: 37.4٪</strong> — محسوبة من 10,540 ريال مشتريات موثقة على 39 يومًا مقابل مبيعات النظام لنفس الفترة. رقم واقعي وصحي لمطعم شاورما.</div>
-  </section>
-
-  <section>
-    <div class="head"><span class="num">02</span><h2>قائمة الدخل الشهرية</h2></div>
-    <div class="tw"><table>
-      <thead><tr><th>البند</th><th style="text-align:left">شهريًا</th><th style="text-align:left">سنويًا</th><th>الإثبات</th></tr></thead>
+    <div class="tw" style="margin-top:16px"><table>
+      <thead><tr><th>المبيعات اليومية</th><th style="text-align:left">شهريًا</th><th style="text-align:left">صافي الربح</th><th style="text-align:left">استرداد الـ81 ألف</th></tr></thead>
       <tbody>
-        <tr><td>الإيراد</td><td class="f">21,660</td><td class="f">259,920</td><td><span class="g g-v">مثبت</span></td></tr>
-        <tr><td>تكلفة المواد الغذائية <span style="color:var(--ink-3)">37.4٪</span></td><td class="f">(8,101)</td><td class="f">(97,212)</td><td><span class="g g-v">مثبت</span></td></tr>
-        <tr><td>التغليف والمستهلكات <span style="color:var(--ink-3)">3٪</span></td><td class="f">(650)</td><td class="f">(7,800)</td><td><span class="g g-e">تقدير</span></td></tr>
-        <tr class="total"><td>مجمل الربح</td><td class="f">12,909</td><td class="f">154,908</td><td><span style="color:var(--ink-3);font-size:12px">هامش 59.6٪</span></td></tr>
-        <tr><td>عامل شاورما واحد <span style="color:var(--ink-3)">محمّل بالكامل</span></td><td class="f">(3,771)</td><td class="f">(45,252)</td><td><span class="g g-e">تقدير</span></td></tr>
-        <tr><td>الإيجار</td><td class="f">(2,000)</td><td class="f">(24,000)</td><td><span class="g g-c">ادعاء</span></td></tr>
-        <tr><td>الكهرباء والمياه</td><td class="f">(1,200)</td><td class="f">(14,400)</td><td><span class="g g-e">تقدير</span></td></tr>
-        <tr><td>رسوم ونظام ومحاسبة وصيانة ونظافة</td><td class="f">(1,300)</td><td class="f">(15,600)</td><td><span class="g g-e">تقدير</span></td></tr>
-        <tr><td>مخصص إحلال المعدات</td><td class="f">(300)</td><td class="f">(3,600)</td><td><span class="g g-e">تقدير</span></td></tr>
-        <tr><td>أخرى</td><td class="f">(200)</td><td class="f">(2,400)</td><td><span class="g g-e">تقدير</span></td></tr>
-        <tr class="total"><td>صافي ربح التشغيل</td><td class="f pos">4,138</td><td class="f pos">49,653</td><td><span style="color:var(--ink-3);font-size:12px">هامش 19.1٪</span></td></tr>
+        <tr class="neg"><td>722 — الحالي</td><td class="f">21,660</td><td class="f">(6,398)</td><td class="f">خسارة</td></tr>
+        <tr><td>1,080 — التعادل</td><td class="f">32,400</td><td class="f">0</td><td class="f">—</td></tr>
+        <tr><td>1,200</td><td class="f">36,000</td><td class="f">2,149</td><td class="f">38 شهرًا</td></tr>
+        <tr class="hit"><td>1,400 — الهدف</td><td class="f">42,000</td><td class="f pos">5,725</td><td class="f">14 شهرًا</td></tr>
+        <tr><td>1,600</td><td class="f">48,000</td><td class="f pos">9,301</td><td class="f">9 أشهر</td></tr>
+        <tr><td>1,800</td><td class="f">54,000</td><td class="f pos">12,877</td><td class="f">6 أشهر</td></tr>
       </tbody>
     </table></div>
-    <div class="note"><strong>راتبك غير محتسب.</strong> الـ4,138 ريالًا هي عائدك على المال والجهد معًا. لو وظّفت مديرًا بـ7,000 ريال بدلًا منك، <strong>ينقلب المشروع إلى خسارة</strong>. وجودك في المحل ليس تفصيلًا — هو شرط الجدوى.</div>
+    <div class="note b"><strong>عند 1,200 ريال يوميًا الاسترداد 38 شهرًا — وهذا ليس مشروعًا جيدًا.</strong> المسافة بين 1,200 و1,400 هي الفرق بين استثمار ناجح وآخر متعثر. خطّط للـ1,400، لا للتعادل.</div>
   </section>
 
   <section>
-    <div class="head"><span class="num">03</span><h2>نقطة التعادل</h2></div>
+    <div class="head"><span class="num">04</span><h2>مسار الخسارة قبل التعادل</h2></div>
+    <p class="lede">بفريق كامل من اليوم الأول ومبيعات لم ترتفع بعد، المحل يخسر. هذا هو المسار المتوقع بصعود متدرج خلال ثمانية أشهر:</p>
     <div class="tw"><table>
-      <thead><tr><th>المؤشر</th><th style="text-align:left">القيمة</th><th>القراءة</th></tr></thead>
+      <thead><tr><th>الشهر</th><th style="text-align:left">المبيعات/يوم</th><th style="text-align:left">صافي الشهر</th><th style="text-align:left">العجز التراكمي</th></tr></thead>
       <tbody>
-        <tr><td>هامش المساهمة</td><td class="f">59.6٪</td><td style="color:var(--ink-2);font-size:13.5px">كل ريال مبيعات يترك 60 هللة لتغطية الثوابت</td></tr>
-        <tr><td>إيراد التعادل الشهري</td><td class="f">14,717</td><td style="color:var(--ink-2);font-size:13.5px">أقل من ذلك = خسارة</td></tr>
-        <tr><td>إيراد التعادل اليومي</td><td class="f">491</td><td style="color:var(--ink-2);font-size:13.5px">مقابل <b class="n">722</b> فعلية</td></tr>
-        <tr><td>طلبات التعادل يوميًا</td><td class="f">27 طلبًا</td><td style="color:var(--ink-2);font-size:13.5px">مقابل <b class="n">40</b> فعلية</td></tr>
-        <tr class="total"><td>هامش الأمان</td><td class="f pos">32.1٪</td><td style="color:var(--ink-2);font-size:13.5px">المبيعات تستطيع الهبوط الثلث قبل الخسارة</td></tr>
+        <tr class="neg"><td>الأول</td><td class="f">767</td><td class="f">(5,598)</td><td class="f">(5,598)</td></tr>
+        <tr class="neg"><td>الثاني</td><td class="f">811</td><td class="f">(4,798)</td><td class="f">(10,396)</td></tr>
+        <tr class="neg"><td>الثالث</td><td class="f">856</td><td class="f">(3,999)</td><td class="f">(14,395)</td></tr>
+        <tr class="neg"><td>الرابع</td><td class="f">901</td><td class="f">(3,199)</td><td class="f">(17,594)</td></tr>
+        <tr class="neg"><td>الخامس</td><td class="f">946</td><td class="f">(2,399)</td><td class="f">(19,993)</td></tr>
+        <tr class="neg"><td>السادس</td><td class="f">990</td><td class="f">(1,599)</td><td class="f">(21,592)</td></tr>
+        <tr class="neg"><td>السابع</td><td class="f">1,035</td><td class="f">(800)</td><td class="f">(22,392)</td></tr>
+        <tr class="total"><td>الثامن — التعادل</td><td class="f">1,080</td><td class="f">0</td><td class="f">(22,392)</td></tr>
       </tbody>
     </table></div>
+    <div class="note"><strong>الشهر الأول هو الأصعب: 5,600 ريال خسارة.</strong> ولو تأخر الصعود إلى اثني عشر شهرًا يصبح العجز التراكمي <strong>35,000</strong>؛ ولو نجحت التحسينات في أربعة أشهر ينخفض إلى <strong>9,600</strong>. السرعة هي المتغير، لا الوجهة.</div>
   </section>
 
   <section>
-    <div class="head"><span class="num">04</span><h2>الاستثمار المطلوب</h2></div>
-    <p class="lede">السعر ليس كل ما ستدفعه. هذا ما تحتاجه فعليًا قبل أن يبدأ المحل يدفع لنفسه:</p>
+    <div class="head"><span class="num">05</span><h2>النقد المطلوب</h2></div>
     <div class="tw"><table>
       <thead><tr><th>البند</th><th style="text-align:left">المبلغ</th><th>ملاحظة</th></tr></thead>
       <tbody>
         <tr><td>سعر التنازل</td><td class="f">30,000</td><td style="color:var(--ink-2);font-size:13.5px">المطروح من البائع</td></tr>
-        <tr><td>رأس مال عامل</td><td class="f">15,000</td><td style="color:var(--ink-2);font-size:13.5px">شهران تشغيل قبل أن يستقر التدفق</td></tr>
-        <tr><td>احتياطي طوارئ</td><td class="f">5,000</td><td style="color:var(--ink-2);font-size:13.5px">مخصص للمخاطر الضريبية والعمالية</td></tr>
-        <tr><td>رسوم نقل الرخص والتوثيق</td><td class="f">2,000</td><td style="color:var(--ink-2);font-size:13.5px">تقدير</td></tr>
-        <tr><td>دفعة الإيجار المقدمة</td><td class="f">2,000</td><td style="color:var(--ink-2);font-size:13.5px">شهر واحد</td></tr>
-        <tr class="total"><td>إجمالي ما تحتاجه</td><td class="f">54,000</td><td style="color:var(--ink-2);font-size:13.5px">لا 30,000</td></tr>
+        <tr><td>التطوير: جلسات ومظلات وشاشة ورسيفر</td><td class="f">20,000</td><td style="color:var(--ink-2);font-size:13.5px">تقدير — سعّره قبل الشراء</td></tr>
+        <tr><td>تمويل خسائر فترة البناء</td><td class="f">22,400</td><td style="color:var(--ink-2);font-size:13.5px">ثمانية أشهر حتى التعادل</td></tr>
+        <tr><td>احتياطي ضريبي وعمالي</td><td class="f">5,000</td><td style="color:var(--ink-2);font-size:13.5px">يُحتجز من السعر ستين يومًا</td></tr>
+        <tr><td>رسوم نقل الرخص ودفعة الإيجار</td><td class="f">4,000</td><td style="color:var(--ink-2);font-size:13.5px">تقدير</td></tr>
+        <tr class="total"><td>الإجمالي</td><td class="f">81,400</td><td style="color:var(--ink-2);font-size:13.5px">لا 30,000</td></tr>
       </tbody>
     </table></div>
-    <div class="note"><strong>المخزون والمعدات غير مُسعَّرة.</strong> لم يصلني جرد ولا تقييم فني. اطلب جردًا مكتوبًا قبل التسليم — فقد يرفع القيمة التي تشتريها أو يكشف معدات تحتاج إحلالًا فوريًا.</div>
+    <div class="note w"><strong>البند الثالث هو الذي يُسقط أغلب المشاريع.</strong> من يدخل بـ50 ألفًا ينفد نقده في الشهر الخامس — قبل أن تثمر التحسينات بشهرين أو ثلاثة. لا تبدأ بأقل من 75 ألفًا نقدًا متاحًا.</div>
   </section>
 
   <section>
-    <div class="head"><span class="num">05</span><h2>تقييم السعر</h2></div>
+    <div class="head"><span class="num">06</span><h2>لماذا الفريق الكامل وليس الأصغر</h2></div>
+    <p class="lede">للأمانة التحليلية: الفريق الكامل يكلّف <strong>10,835 ريالًا شهريًا</strong> فوق خطة «المالك وطاهٍ واحد»، وهذا فرق ثابت لا يتقلّص مع نمو المبيعات.</p>
     <div class="tw"><table>
-      <thead><tr><th>طريقة التقييم</th><th style="text-align:left">القيمة العادلة</th></tr></thead>
+      <thead><tr><th>المبيعات/يوم</th><th style="text-align:left">المالك + التركي</th><th style="text-align:left">الفريق الكامل</th></tr></thead>
       <tbody>
-        <tr><td>مضاعف الأرباح ×1 (متحفظ)</td><td class="f">49,653</td></tr>
-        <tr><td>مضاعف الأرباح ×2 (معتدل)</td><td class="f">99,306</td></tr>
-        <tr class="total"><td>السعر المطروح</td><td class="f" style="color:var(--ok)">30,000</td></tr>
+        <tr><td>722</td><td class="f pos">4,437</td><td class="f negc">(6,398)</td></tr>
+        <tr><td>1,080</td><td class="f pos">10,838</td><td class="f">0</td></tr>
+        <tr><td>1,400</td><td class="f pos">16,560</td><td class="f pos">5,725</td></tr>
       </tbody>
     </table></div>
-    <div class="note" style="border-color:var(--ok);background:var(--ok-soft)"><strong>المضاعف الضمني ×0.60</strong> — أي أنك تشتري المحل بأقل من صافي ربح سنة واحدة. هذا سعر منخفض بمقاييس القطاع.</div>
-    <div class="note" style="border-color:var(--warn);background:var(--warn-soft)"><strong>وسعر منخفض بلا سبب لا يوجد.</strong> السبب المُعلن — تسليم المحل لابن لم يُدِره — <strong>متسق مع المستندات</strong>: مشتريات مستمرة بلا رقابة، وعجز نقدي في الوردية، وضريبة غير مفعّلة، ونظام بمستخدم واحد. هذا مطعم بلا مالك، لا مطعم بلا زبائن. لكن تحقق بنفسك من بنود القسم التالي قبل أن تسلّم أي مبلغ.</div>
+    <div class="note"><strong>الخطة المصغّرة أفضل ماليًا عند كل مستوى مبيعات</strong> — لكنها <strong>غير متاحة لك</strong>، لأن عملك لا يسمح بالوقوف في المحل. فالمقارنة الصحيحة ليست بين الخطتين، بل بين الفريق الكامل وبين ألا تشتري. وبهذا المعيار الفريق الكامل مبرَّر — شرط بلوغ 1,400.</div>
+    <div class="note o"><strong>وميزتك التنافسية حقيقية:</strong> حيّ بلا محل واحد يعرض المباريات. هذا ليس تحسينًا تجميليًا بل <strong>فجوة سوقية</strong>، وهي أقوى مبرر لتحمّل ثمانية أشهر من الخسارة.</div>
   </section>
 
   <section>
-    <div class="head"><span class="num">06</span><h2>تحليل الحساسية</h2></div>
-    <p class="lede">ما الذي يكسر الصفقة؟ ثلاثة متغيرات فقط تستحق المتابعة:</p>
-    <div class="tw"><table>
-      <thead><tr><th>السيناريو</th><th style="text-align:left">صافي الربح السنوي</th><th style="text-align:left">الاسترداد</th></tr></thead>
+    <div class="head"><span class="num">07</span><h2>حافز المشرف — بالصيغة التي تُصرف</h2></div>
+    <div class="note b"><strong>الصيغة المقترحة لن تُصرف أبدًا:</strong> «ألف ريال عند تحقيق 10,000 يوميًا». عشرة آلاف يوميًا تعني <strong>554 طلبًا</strong> — أي 14 ضعف الحالي، وطلبًا كل مئة ثانية على مدار ستة عشر ساعة. حافز لا يُصرف يفقد المشرف ثقته بك في الشهر الثاني.</div>
+    <div class="note o"><strong>البديل: 3٪ على كل ريال يُسجَّل في نظام رواء فوق 800 ريال يوميًا.</strong></div>
+    <div class="tw" style="margin-top:14px"><table>
+      <thead><tr><th>المبيعات/يوم</th><th style="text-align:left">عمولة المشرف شهريًا</th><th>الأثر عليك</th></tr></thead>
       <tbody>
-        <tr><td>الإيراد ينخفض 30٪</td><td class="f">3,179</td><td class="f">17 سنة</td></tr>
-        <tr><td>الإيراد ينخفض 15٪</td><td class="f">26,416</td><td class="f">سنتان</td></tr>
-        <tr class="total"><td>الحالة الأساسية</td><td class="f pos">49,653</td><td class="f">13 شهرًا</td></tr>
-        <tr><td>تكلفة المواد ترتفع 5 نقاط</td><td class="f">36,657</td><td class="f">18 شهرًا</td></tr>
-        <tr><td>الإيجار يرتفع 2,000</td><td class="f">25,653</td><td class="f">سنتان</td></tr>
-        <tr class="neg"><td>الإيجار يرتفع 5,000</td><td class="f">(10,347)</td><td class="f">لا يُسترد</td></tr>
+        <tr><td>900</td><td class="f">90 ريال</td><td style="color:var(--ink-2);font-size:13.5px">صغيرة لكنها حقيقية — يصدّق النظام</td></tr>
+        <tr><td>1,080</td><td class="f">252 ريال</td><td style="color:var(--ink-2);font-size:13.5px">مقابل 3,200 ريال ربح إضافي لك</td></tr>
+        <tr><td>1,400</td><td class="f">540 ريال</td><td style="color:var(--ink-2);font-size:13.5px">مقابل 12,100 ريال ربح إضافي لك</td></tr>
       </tbody>
     </table></div>
-    <div class="note"><strong>الإيجار هو القاتل الوحيد.</strong> بـ2,000 ريال المشروع مريح، وعند 7,000 ينهار. لهذا فإن <strong>مدة العقد وموافقة المالك على التنازل دون رفع الأجرة</strong> أهم بند تفاوضي عندك — أهم من السعر نفسه.</div>
+    <div class="note"><strong>وتحتاج رفعًا بـ5٪ فقط لتسدد نفسها</strong> — لأن هامش مساهمتك 59.6٪. والأهم أنها تجعل المشرف <strong>مستفيدًا من تسجيل كل بيع</strong>، وهو ما يهاجم مباشرةً العجز النقدي المرصود في المستندات: 51 ريالًا في وردية واحدة، أي نحو 1,500 شهريًا.</div>
   </section>
 
   <section>
-    <div class="head"><span class="num">07</span><h2>المخاطر مرتبة بالخطورة</h2></div>
+    <div class="head"><span class="num">08</span><h2>معيار الإيقاف</h2></div>
+    <div class="kill">
+      <div class="t">اكتب هذا الرقم اليوم، قبل أن تتحمّس</div>
+      <p>المشاريع لا تُقتل بقرار خاطئ، بل بغياب لحظة يقول فيها صاحبها «كفى». وأنت الآن في الموضع الوحيد الذي تحدد فيه هذه اللحظة بعقل بارد:</p>
+      <div class="rule">إن لم تتجاوز المبيعات 900 ريال يوميًا<br>بنهاية الشهر الرابع ← أوقف الضخ وأعد التقييم</div>
+      <p>عند الشهر الرابع تكون قد أنفقت نحو <b class="n">68,000</b> ريال وخسرت <b class="n">17,600</b>. المتبقي لديك يكفي لإعادة ترتيب: تخفيض الفريق، أو بيع المحل، أو تغيير الخطة. أما تجاوز هذه النقطة بلا مراجعة فيعني أنك ستكتشف الفشل حين لا يبقى نقد لتصحيحه.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><span class="num">09</span><h2>المخاطر مرتبة</h2></div>
     <div class="risks">
       <div class="risk r1">
+        <div class="rh"><span class="rt">تصريح الجلسات الخارجية قد يُرفض</span><span class="rl">حرج</span></div>
+        <p>نصف خطة التطوير تقوم على الجلسات الخارجية، وإشغال الرصيف يحتاج تصريحًا من البلدية وليس تلقائيًا. رفضه يُسقط الفكرة بعد أن تكون دفعت.</p>
+        <div class="fix"><b>الإجراء:</b> راجع البلدية واحصل على الجواب <b>قبل</b> شراء كرسي واحد. هذا أول اتصال تجريه.</div>
+      </div>
+      <div class="risk r1">
         <div class="rh"><span class="rt">ضريبة القيمة المضافة غير محتسبة</span><span class="rl">حرج</span></div>
-        <p>تقرير رواء يُظهر «المبيعات» و«المبيعات شاملة الضريبة» رقمًا واحدًا: 115,500 ريال. أي لا ضريبة مخرجات على مبيعات خمسة أشهر، رغم أن المنشأة مسجّلة. المستحقات والغرامات قد تلاحق النشاط.</p>
-        <div class="fix"><b>الإجراء:</b> اطلب شهادة زكاة وضريبة أو مخالصة، واحتجز 10,000 ريال من السعر لستين يومًا في العقد.</div>
+        <p>تقرير رواء يُظهر «المبيعات» و«المبيعات شاملة الضريبة» رقمًا واحدًا: 115,500 ريال. لا ضريبة مخرجات على مبيعات خمسة أشهر رغم أن المنشأة مسجّلة.</p>
+        <div class="fix"><b>الإجراء:</b> شهادة زكاة وضريبة أو مخالصة، واحتجاز 10,000 ريال ستين يومًا مكتوبًا في العقد.</div>
       </div>
       <div class="risk r1">
         <div class="rh"><span class="rt">عقد الإيجار — مدته وانتقاله</span><span class="rl">حرج</span></div>
-        <p>الإيجار 2,000 ريال هو ما يجعل الصفقة مجدية. لم أرَ نسخة العقد ولا مدته المتبقية ولا موافقة المالك على التنازل.</p>
-        <div class="fix"><b>الإجراء:</b> عقد موثق في «إيجار» بمدة متبقية لا تقل عن ثلاث سنوات، وموافقة خطية على التنازل بلا رفع أجرة. بدونها لا توقّع.</div>
+        <p>الإيجار 2,000 ريال هو ما يجعل الخطة ممكنة. لم تصل نسخة العقد ولا المدة المتبقية ولا موافقة المالك على التنازل. ولو ارتفع إلى 7,000 انقلب المشروع خسارة دائمة.</p>
+        <div class="fix"><b>الإجراء:</b> عقد موثق في «إيجار» بثلاث سنوات متبقية على الأقل، وموافقة خطية على التنازل بلا رفع أجرة. بدونها لا توقّع.</div>
       </div>
       <div class="risk r2">
-        <div class="rh"><span class="rt">تضارب الفروع — الحمراء مقابل الهضبة</span><span class="rl">مرتفع</span></div>
-        <p>فواتير الموردين باسم «مشوي كرز — الحمراء»، وتذاكر هنقرستيشن باسم «مشوي كور — الهضبة». أي أن مبيعات التوصيل قد تكون مسجّلة على فرع آخر.</p>
-        <div class="fix"><b>الإجراء:</b> اسأل صراحةً: هل الـ115,500 تخص فرع الحمراء وحده؟ وهل تشمل التوصيل؟ إن لم تشمله فإيرادك الحقيقي أعلى.</div>
+        <div class="rh"><span class="rt">تكلفة اشتراك بي إن التجاري مجهولة</span><span class="rl">مرتفع</span></div>
+        <p>أُدرج بـ2,000 ريال شهريًا افتراضًا. الاشتراك التجاري يُسعَّر بعدد الشاشات ومساحة المحل وهو سنوي، وكل 1,000 ريال فوق التقدير ترفع التعادل 56 ريالًا يوميًا.</p>
+        <div class="fix"><b>الإجراء:</b> عرض سعر رسمي قبل الشراء. وتأكد أن العرض <b>مرخّص تجاريًا</b> — فالبث بلا ترخيص غرامته تفوق الاشتراك.</div>
       </div>
       <div class="risk r2">
-        <div class="rh"><span class="rt">تسريب نقدي في الورديات</span><span class="rl">مرتفع</span></div>
-        <p>وردية 7–8 سبتمبر: مبيعات 646 ريالًا، النقد المتوقع 271 والمُدخل 220 — عجز 51 ريالًا في وردية واحدة. وموازنة 17 أبريل غير متوافقة: 136 ريالًا من مبيعات البطاقات لم تُسوَّ لدى الخادم.</p>
-        <div class="fix"><b>الإجراء:</b> هذا عيب رقابة لا عيب طلب — وهو <b>فرصة لك</b>. 51 ريالًا يوميًا تساوي 1,500 شهريًا: نصف أجرة عامل.</div>
+        <div class="rh"><span class="rt">غياب المالك مع تسريب نقدي مرصود</span><span class="rl">مرتفع</span></div>
+        <p>وردية 7–8 سبتمبر: نقد متوقع 271 ومُدخل 220 — عجز 51 ريالًا. وموازنة 17 أبريل غير متوافقة: 136 ريالًا لم تُسوَّ. النظام يعمل بمستخدم واحد بلا تتبع.</p>
+        <div class="fix"><b>الإجراء:</b> مستخدم باسم كل موظف · إقفال وردية يومي · تقرير مبيعات يصلك على جوالك كل ليلة · ومراجعة تسويات مدى أسبوعيًا. الأمانة تدوم أطول حين لا تُختبر بلا داعٍ.</div>
+      </div>
+      <div class="risk r2">
+        <div class="rh"><span class="rt">فاتورة الكهرباء تقدير متفائل</span><span class="rl">مرتفع</span></div>
+        <p>أُدرجت بـ1,200 ريال. شاورما بشوايات وتكييف في صيف تبوك — مع شاشة وجلسات خارجية مكيّفة أو مبرّدة — قد تتجاوز 2,800.</p>
+        <div class="fix"><b>الإجراء:</b> فاتورة كهرباء صيفية واحدة (يوليو أو أغسطس) تكفي لتصحيح التقدير.</div>
       </div>
       <div class="risk r3">
-        <div class="rh"><span class="rt">مستحقات عمالية وتأمينات</span><span class="rl">متوسط</span></div>
-        <p>لم يصلني كشف مشتركين ولا شهادة تأمينات. رواتب متأخرة أو مكافآت نهاية خدمة تنتقل عمليًا مع النشاط.</p>
-        <div class="fix"><b>الإجراء:</b> شهادة تأمينات سارية، ومخالصة موقّعة من كل عامل ينتقل معك.</div>
+        <div class="rh"><span class="rt">تضارب الفروع — الحمراء مقابل الهضبة</span><span class="rl">متوسط</span></div>
+        <p>فواتير الموردين باسم «مشوي كرز — الحمراء» وتذاكر هنقرستيشن باسم «مشوي كور — الهضبة».</p>
+        <div class="fix"><b>الإجراء:</b> اسأل: هل الـ115,500 تخص الحمراء وحده؟ وهل تشمل التوصيل؟ إن لم تشمله فنقطة بدايتك أعلى مما حسبت.</div>
       </div>
       <div class="risk r3">
-        <div class="rh"><span class="rt">مخالفات بلدية وفواتير مرافق</span><span class="rl">متوسط</span></div>
-        <p>لم يصلني استعلام مخالفات ولا آخر فاتورة كهرباء.</p>
-        <div class="fix"><b>الإجراء:</b> استعلام بلدي حديث لا يتجاوز سبعة أيام، وآخر فاتورة مسددة.</div>
+        <div class="rh"><span class="rt">مستحقات عمالية ومخالفات بلدية</span><span class="rl">متوسط</span></div>
+        <p>لم يصل كشف تأمينات ولا استعلام مخالفات ولا آخر فاتورة كهرباء.</p>
+        <div class="fix"><b>الإجراء:</b> شهادة تأمينات · مخالصات العمال · استعلام بلدي لا يتجاوز سبعة أيام.</div>
       </div>
     </div>
   </section>
 
   <section>
-    <div class="head"><span class="num">08</span><h2>خطة التنفيذ</h2></div>
-    <h3 style="margin-bottom:11px">قبل التوقيع</h3>
+    <div class="head"><span class="num">10</span><h2>خطة التنفيذ</h2></div>
+    <h3 style="margin-bottom:11px">قبل أن تدفع ريالًا</h3>
     <ol class="steps">
-      <li><div><b>عقد إيجار موثق + موافقة تنازل خطية</b><span>ثلاث سنوات متبقية على الأقل، وبلا رفع أجرة عند النقل. هذا البند وحده يسقط الصفقة أو يثبّتها.</span></div></li>
-      <li><div><b>شهادة زكاة وضريبة أو مخالصة</b><span>مع احتجاز 10,000 ريال لستين يومًا مكتوبة في العقد.</span></div></li>
-      <li><div><b>شهادة تأمينات + مخالصات العمال</b><span>وكشف بالمشتركين ومن سينتقل معك.</span></div></li>
-      <li><div><b>جرد مكتوب للمعدات والمخزون</b><span>بالأسماء والحالة، مع فحص فني للأفران والتبريد تدفع له أنت لا البائع.</span></div></li>
-      <li><div><b>استعلام مخالفات بلدية + مخالصة كهرباء</b><span>لا يتجاوز عمره سبعة أيام.</span></div></li>
+      <li><div><b>اتصل بالبلدية: هل يُسمح بجلسات خارجية في هذا الموقع؟</b><span>الجواب بـ«لا» يُسقط نصف الخطة ويوفّر عليك 20,000 ريال. اجعله أول مكالمة.</span></div></li>
+      <li><div><b>اطلب عرض سعر بي إن التجاري الرسمي</b><span>بعدد الشاشات ومساحة المحل. استبدل به الافتراض في الدراسة.</span></div></li>
+      <li><div><b>عقد إيجار موثق + موافقة تنازل خطية</b><span>ثلاث سنوات متبقية على الأقل وبلا رفع أجرة.</span></div></li>
+      <li><div><b>شهادة زكاة وضريبة + شهادة تأمينات + مخالصات العمال</b><span>مع احتجاز 10,000 ريال ستين يومًا في العقد.</span></div></li>
+      <li><div><b>فاتورة كهرباء صيفية + جرد مكتوب للمعدات</b><span>مع فحص فني للشوايات والتبريد تدفع له أنت لا البائع.</span></div></li>
     </ol>
-    <h3 style="margin:26px 0 11px">أول أسبوع بعد الاستلام</h3>
+    <h3 style="margin:26px 0 11px">الشهر الأول — قبل أي إنفاق تطوير</h3>
     <ol class="steps">
-      <li><div><b>فعّل ضريبة القيمة المضافة في نظام رواء</b><span>وتأكد أن كل فاتورة بيع تحمل سطر ضريبة.</span></div></li>
-      <li><div><b>أدخل أسعار التكلفة لكل صنف</b><span>النظام حاليًا يعرض «الربح» مساويًا للمبيعات — أي أن البائع لا يعرف ربحه من أي صنف.</span></div></li>
-      <li><div><b>أنشئ مستخدمًا لكل موظف</b><span>النظام يعمل بمستخدم واحد، فلا تتبع لمن باع ماذا.</span></div></li>
-      <li><div><b>اقفل الوردية بنفسك يوميًا</b><span>وقارن النقد الفعلي بالمتوقع. هذا وحده يوقف التسريب الذي رصدته المستندات.</span></div></li>
-      <li><div><b>اربط المبيعات بالبنك</b><span>راجع تسويات مدى أسبوعيًا؛ موازنة 17 أبريل تُظهر أن التسوية قد تفشل بلا أن ينتبه أحد.</span></div></li>
+      <li><div><b>عدّل المنيو أولًا — أرخص تحسين وأسرعه</b><span>متوسط فاتورتك 18 ريالًا. رفعه إلى 24 بوجبات وإضافات = +33٪ مبيعات بلا زبون إضافي ولا ريال تطوير. جرّبه شهرًا؛ قد يوصلك لنصف الهدف مجانًا.</span></div></li>
+      <li><div><b>فعّل ضريبة القيمة المضافة في رواء</b><span>وتأكد أن كل فاتورة تحمل سطر ضريبة.</span></div></li>
+      <li><div><b>أدخل أسعار التكلفة لكل صنف</b><span>النظام يعرض «الربح» مساويًا للمبيعات — أي أن البائع لا يعرف ربحه من أي صنف. هذا يكشف لك أين يذهب الـ37.4٪.</span></div></li>
+      <li><div><b>أنشئ مستخدمًا لكل موظف وفعّل الإقفال اليومي</b><span>وابدأ عمولة المشرف من اليوم الأول ليصدّقها.</span></div></li>
+      <li><div><b>اطلب عروض أسعار من موردين منافسين لدار السالمين</b><span>هي 82٪ من مشترياتك. كل نقطة مئوية توفّرها = 2,600 ريال سنويًا.</span></div></li>
+    </ol>
+    <h3 style="margin:26px 0 11px">الشهر الثاني فما بعد</h3>
+    <ol class="steps">
+      <li><div><b>نفّذ التطوير بعد أن يصل التصريح</b><span>الجلسات والشاشة والرسيفر معًا — الأثر يأتي من الحزمة لا من جزء منها.</span></div></li>
+      <li><div><b>راقب رقمًا واحدًا: المبيعات اليومية المسجّلة في رواء</b><span>لا تقديرات ولا انطباعات. رقم واحد على جوالك كل ليلة.</span></div></li>
+      <li><div><b>عند نهاية الشهر الرابع: راجع معيار الإيقاف</b><span>أقل من 900 ريال يوميًا ← توقف وأعد التقييم. لا تؤجل هذه المراجعة.</span></div></li>
     </ol>
   </section>
 
   <section>
-    <div class="head"><span class="num">09</span><h2>حدود هذه الدراسة</h2></div>
+    <div class="head"><span class="num">11</span><h2>حدود هذه الدراسة</h2></div>
     <div class="limits">
       <p>ما لا تغطيه، وينبغي أن تعرفه قبل أن تعتمد عليها:</p>
       <ul>
-        <li><b>الإيجار والسعر ادّعاء شفهي</b> — لم أرَ عقدًا ولا عرضًا مكتوبًا. وهما أهم رقمين بعد الإيراد.</li>
-        <li><b>الكهرباء والعمالة والمصاريف الثابتة تقديرات</b> — لم تصل فاتورة مرافق واحدة ولا مسيّر رواتب. فاتورة كهرباء صيفية قد ترفع التقدير كثيرًا.</li>
-        <li><b>لا كشف بنكي ولا إقرار ضريبي</b> — الإيراد مثبت بمصدرين، لكن لم يُختبر بالمصدر الثالث: البنك.</li>
-        <li><b>المخزون والمعدات غير مُقيَّمة</b> — لا جرد ولا فحص فني.</li>
-        <li><b>لا يُحتسب أي تحسين تُدخله أنت</b> — النمو مفترض صفرًا عمدًا. أرقام هذه الدراسة هي أداء المحل تحت إدارة فاشلة، لا تحت إدارتك.</li>
+        <li><b>الإيراد الحالي وحده هو المثبت</b> — بمصدرين مستقلين. كل ما بعده (أثر التطوير، سرعة الصعود، بلوغ 1,400) <b>فرضيات لا وقائع</b>.</li>
+        <li><b>مسار الصعود إلى التعادل مفترض خطيًا على ثمانية أشهر</b> — وهو تبسيط. الواقع يتحرك قفزات، وقد يكون أسرع بعد المباريات الكبرى وأبطأ في الصيف.</li>
+        <li><b>اشتراك بي إن وتكلفة التطوير تقديران</b> — لم يصل عرض سعر لأي منهما. كل 1,000 ريال شهريًا فوق التقدير ترفع التعادل 56 ريالًا يوميًا.</li>
+        <li><b>الإيجار والسعر ادّعاء شفهي</b> — لم تصل نسخة عقد ولا عرض مكتوب، وهما أهم رقمين بعد الإيراد.</li>
+        <li><b>الكهرباء والعمالة تقديرات</b> — لم تصل فاتورة مرافق واحدة ولا مسيّر رواتب.</li>
+        <li><b>لا كشف بنكي ولا إقرار ضريبي</b> — الإيراد لم يُختبر بالمصدر الثالث: البنك.</li>
       </ul>
     </div>
   </section>
 
   <footer>
-    مبنية على 126 مستندًا مصوَّرًا (33 فاتورة مورد ضريبية · 16 موازنة يومية · 8 تذاكر توصيل · 35 فاتورة يدوية) وتقرير نظام رواء للفترة 01/04/2026–07/09/2026.<br>
+    الأساس: 126 مستندًا مصوَّرًا (33 فاتورة مورد ضريبية · 16 موازنة يومية · 8 تذاكر توصيل · 35 فاتورة يدوية) وتقرير نظام رواء 01/04/2026–07/09/2026.<br>
     كل رقم موسوم بدرجة إثباته: <span class="g g-v">مثبت</span> بمستند مستقل · <span class="g g-c">ادعاء</span> من البائع بلا مستند · <span class="g g-e">تقدير</span> منهجي قابل للتعديل.<br>
-    السجل التفصيلي لكل مستند ورقم في <span class="n" dir="ltr">data/extracted/ledger.csv</span> · النموذج المالي في <span class="n" dir="ltr">model/feasibility.py</span>
+    السجل التفصيلي في <span class="n" dir="ltr">data/extracted/ledger.csv</span> · النموذج المالي في <span class="n" dir="ltr">model/feasibility.py</span>
   </footer>
 </div>
