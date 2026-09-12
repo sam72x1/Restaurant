@@ -358,6 +358,19 @@
     } catch(e){}
   }
 
+  // سجل دائم لا يدور: سطر واحد لكل حدث اختيار ودفعة، ليبقى الدليل كاملًا
+  var auditSeq = 0;
+  function audit(kind, data){
+    if(!db) return;
+    auditSeq++;
+    var doc = {kind: kind, at: new Date().toISOString(), session: SESSION,
+               tMs: Date.now() - t0, ua: navigator.userAgent};
+    if(data) for(var k in data) if(data.hasOwnProperty(k)) doc[k] = data[k];
+    try {
+      db.collection("audit").doc(SESSION + "-" + ("000" + auditSeq).slice(-3)).set(doc);
+    } catch(e){}
+  }
+
   function beacon(line){
     beaconBuf.push(line);
     if(beaconBuf.length > 200) beaconBuf.shift();
@@ -455,6 +468,7 @@
       var secs = Math.round((Date.now() - pickerOpenedAt) / 1000);
       pickerOpenedAt = 0;
       log("!! المتصفح لم يسلّم أي ملف بعد " + secs + " ثانية من فتح المنتقي");
+      audit("pick_timeout", {secs: secs});
       openDiag();
       banner("متصفح جهازك لم يسلّم الصور للصفحة — استسلم وهو يحوّلها، ولا يمكن لأي كود " +
              "تجاوز هذه المرحلة. جرّب اختيار 25 صورة فقط في المرة، أو ارفع من كمبيوتر.", true);
@@ -897,6 +911,7 @@
     });
     if(skipped) log("• تُخطّي " + skipped + " ملفًا مرفوعًا من قبل");
     if(!files.length){
+      audit("batch_all_duplicate", {selected: total0});
       banner("كل الملفات المختارة (" + total0 + ") مرفوعة مسبقًا — لا جديد.");
       return Promise.resolve();
     }
@@ -936,10 +951,12 @@
     return chain.then(function(){
       endBatch();
       el("note").value = "";
+      audit("batch_done", {selected: total0, skippedDuplicate: skipped, uploaded: files.length, ms: Date.now() - batchStart});
       banner("انتهت الدفعة: " + files.length + " ملفًا. قل «رفعت» في المحادثة، أو تابع بدفعة جديدة.");
     }, function(e){
       endBatch();
       log("!! توقفت الدفعة: " + (e && (e.code || e.message) ? (e.code || e.message) : "?"));
+      audit("batch_failed", {selected: total0, skippedDuplicate: skipped, attempted: files.length, done: done, err: String(e && (e.code || e.message) || "?")});
       openDiag();
       banner("توقفت الدفعة قبل نهايتها. أعد اختيار نفس الصور — سيرفع الناقص فقط.", true);
     });
@@ -1097,7 +1114,7 @@
   }
 
   /* ---------------- أحداث الواجهة ---------------- */
-  el("btn-pick").addEventListener("click", function(){ log("== ضغط: صور من الجهاز"); armPickerWatch(); el("picker").click(); });
+  el("btn-pick").addEventListener("click", function(){ log("== ضغط: صور من الجهاز"); audit("pick_open", {input: "picker"}); armPickerWatch(); el("picker").click(); });
   el("btn-pdf").addEventListener("click", function(){ log("== ضغط: ملف PDF"); el("pdfpicker").click(); });
   el("btn-cam").addEventListener("click", function(){ log("== ضغط: الكاميرا"); el("camera").click(); });
 
@@ -1119,7 +1136,7 @@
     el("picker").click();
   });
 
-  el("btn-files").addEventListener("click", function(){ log("== ضغط: تصفّح الملفات"); armPickerWatch(); el("filepicker").click(); });
+  el("btn-files").addEventListener("click", function(){ log("== ضغط: تصفّح الملفات"); audit("pick_open", {input: "filepicker"}); armPickerWatch(); el("filepicker").click(); });
 
   ["picker","pdfpicker","camera","filepicker"].forEach(function(id){
     var input = el(id);
@@ -1130,9 +1147,12 @@
       files.forEach(function(f){ bytes += f.size || 0; });
       log("== حدث الاختيار (" + id + "): وصلت " + files.length + " ملفات · " +
           Math.round(bytes / 1048576) + " م.ب");
+      audit("delivered", {input: id, count: files.length, bytes: bytes,
+                          names: files.slice(0, 400).map(function(f){ return f.name; })});
       flushBeacon();
       if(!files.length){
         log("!! المتصفح لم يسلّم أي ملف — قلّل عدد الصور المختارة");
+        audit("delivered_empty", {input: id});
         banner("المتصفح لم يسلّم أي صورة. جرّب اختيار 5 صور فقط.", true);
         openDiag();
         return;
