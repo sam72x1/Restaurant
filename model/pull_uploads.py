@@ -20,6 +20,7 @@ FOLDER = {
     "pos": "pos-reports", "bank": "bank", "vat": "bank",
     "contract": "contracts", "license": "licenses",
     "supplier": "invoices", "utility": "invoices",
+    "stock": "stock", "menu": "menu",
     "payroll": "invoices", "other": "invoices",
 }
 
