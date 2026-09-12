@@ -1,0 +1,331 @@
+<title>سجل الأسبوع — مشوي كور</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Kufi+Arabic:wght@600;700&display=swap">
+<style>
+  :root{
+    --bg:#F4F7F7; --surface:#FFFFFF; --sunken:#EBF0F1;
+    --ink:#11222A; --ink-2:#4F656E; --ink-3:#7C9099; --line:#D4DFE2; --line-2:#BECCD0;
+    --accent:#0A6068; --accent-ink:#FFFFFF; --accent-soft:#DBEAEB; --accent-line:#96C3C5;
+    --ok:#15653F; --ok-soft:#DBEDE3; --ok-line:#A0CEB6;
+    --warn:#8A5406; --warn-soft:#F6E9D2; --warn-line:#DCBE87;
+    --bad:#962722; --bad-soft:#F6DFDD; --bad-line:#DFA8A4;
+    --r:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0B1315; --surface:#131E22; --sunken:#0F191C;
+      --ink:#E1EAEC; --ink-2:#8CA1A8; --ink-3:#687C84; --line:#25353A; --line-2:#32454B;
+      --accent:#49C6CE; --accent-ink:#042227; --accent-soft:#112F34; --accent-line:#1D4850;
+      --ok:#5ACF92; --ok-soft:#0E271C; --ok-line:#1E432E;
+      --warn:#E0A94F; --warn-soft:#281F12; --warn-line:#48381A;
+      --bad:#EF8A84; --bad-soft:#2A1514; --bad-line:#4A2422;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0B1315; --surface:#131E22; --sunken:#0F191C;
+    --ink:#E1EAEC; --ink-2:#8CA1A8; --ink-3:#687C84; --line:#25353A; --line-2:#32454B;
+    --accent:#49C6CE; --accent-ink:#042227; --accent-soft:#112F34; --accent-line:#1D4850;
+    --ok:#5ACF92; --ok-soft:#0E271C; --ok-line:#1E432E;
+    --warn:#E0A94F; --warn-soft:#281F12; --warn-line:#48381A;
+    --bad:#EF8A84; --bad-soft:#2A1514; --bad-line:#4A2422;
+  }
+
+  *{box-sizing:border-box}
+  body{ background:var(--bg); color:var(--ink); margin:0;
+        font-family:"IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;
+        font-size:15.5px; line-height:1.7; -webkit-text-size-adjust:100%; }
+  .page{ direction:rtl; max-width:760px; margin:0 auto; padding-inline:18px; padding-block:26px 70px; }
+  .n{ font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+
+  h1{ font-family:"Noto Kufi Arabic",sans-serif; font-weight:700; font-size:clamp(23px,5.2vw,30px);
+      line-height:1.28; margin:0; letter-spacing:-.015em; }
+  h2{ font-family:"Noto Kufi Arabic",sans-serif; font-weight:600; font-size:16.5px; margin:0 0 12px; }
+  p{ margin:0; }
+
+  header{ border-bottom:2px solid var(--ink); padding-bottom:16px; margin-bottom:22px; }
+  .lede{ color:var(--ink-2); font-size:14.5px; margin-top:9px; }
+  .conn{ display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-2);
+         margin-top:11px; padding:3px 10px; border:1px solid var(--line); border-radius:99px; }
+  .dot{ width:7px; height:7px; border-radius:99px; background:var(--ink-3); flex:none; }
+  .conn[data-s="on"] .dot{ background:var(--ok); }
+  .conn[data-s="err"] .dot{ background:var(--bad); }
+
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+         padding:17px 18px; margin-bottom:16px; }
+
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+  @media (max-width:430px){ .grid{ grid-template-columns:1fr; } }
+  .f{ display:flex; flex-direction:column; gap:4px; }
+  .f label{ font-size:12.5px; color:var(--ink-2); font-weight:500; }
+  .f .hint{ font-size:11px; color:var(--ink-3); }
+  input{ font:inherit; font-family:"IBM Plex Mono",monospace; font-size:16px;
+         padding:9px 11px; border:1px solid var(--line-2); border-radius:8px;
+         background:var(--bg); color:var(--ink); width:100%; }
+  input:focus{ outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+  .full{ grid-column:1/-1; }
+
+  button{ font:inherit; font-weight:600; font-size:15px; padding:11px 18px; border-radius:8px;
+          border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink);
+          cursor:pointer; width:100%; margin-top:14px; }
+  button:disabled{ opacity:.5; cursor:default; }
+  button.ghost{ background:transparent; color:var(--ink-2); border-color:var(--line-2); margin-top:8px; }
+
+  .tiles{ display:grid; grid-template-columns:repeat(auto-fit,minmax(118px,1fr)); gap:1px;
+          background:var(--line); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; }
+  .tile{ background:var(--surface); padding:11px 13px; }
+  .tile dt{ font-size:11.5px; color:var(--ink-2); margin-bottom:2px; }
+  .tile dd{ margin:0; font-size:20px; font-weight:600; line-height:1.15;
+            font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; }
+  .tile dd small{ font-size:11.5px; font-weight:400; color:var(--ink-2); margin-inline-start:3px;
+                  font-family:"IBM Plex Sans Arabic",sans-serif; }
+
+  .verdict{ border-inline-start:4px solid var(--ink-3); background:var(--sunken);
+            padding:13px 15px; border-radius:0 var(--r) var(--r) 0; font-size:14.5px; margin-top:14px; }
+  .verdict.a{ border-color:var(--ok); background:var(--ok-soft); }
+  .verdict.b{ border-color:var(--bad); background:var(--bad-soft); }
+  .verdict.w{ border-color:var(--warn); background:var(--warn-soft); }
+  .verdict b{ color:var(--ink); }
+
+  table{ border-collapse:collapse; width:100%; font-size:13.5px; }
+  th,td{ padding:7px 9px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; }
+  thead th{ background:var(--sunken); font-size:11.5px; color:var(--ink-2); font-weight:600; }
+  td.m{ font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; }
+  tbody tr:last-child td{ border-bottom:0; }
+  .tw{ overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
+  .del{ color:var(--bad); cursor:pointer; font-size:12px; }
+
+  .msg{ padding:11px 14px; border-radius:8px; font-size:14px; margin-bottom:14px; }
+  .msg.ok{ background:var(--ok-soft); border:1px solid var(--ok-line); }
+  .msg.err{ background:var(--bad-soft); border:1px solid var(--bad-line); }
+  .empty{ color:var(--ink-3); font-size:14px; text-align:center; padding:22px 0; }
+</style>
+
+<div class="page">
+
+  <header>
+    <h1>سجل الأسبوع</h1>
+    <p class="lede">سبعة أيام تحسم السؤال الوحيد المتبقي: <b>كم يبيع المحل فعلًا، وكم تكلّفه مواده.</b> سجّل كل يوم بأربعة أرقام — والنتيجة تظهر أمامك وأنت تكتب.</p>
+    <span class="conn" id="conn" data-s="wait"><span class="dot"></span><span id="conn-t">جارٍ فتح التخزين…</span></span>
+  </header>
+
+  <div id="msg" hidden></div>
+
+  <div class="card">
+    <h2>أضف يومًا</h2>
+    <div class="grid">
+      <div class="f full">
+        <label for="d">التاريخ</label>
+        <input type="date" id="d">
+      </div>
+
+      <div class="f">
+        <label for="sales">مبيعات رواء — ريال</label>
+        <input type="number" inputmode="decimal" id="sales" placeholder="مثال: 780">
+        <span class="hint">من تقرير صندوق البيع</span>
+      </div>
+      <div class="f">
+        <label for="ops">عدد عمليات البيع</label>
+        <input type="number" inputmode="numeric" id="ops" placeholder="مثال: 52">
+      </div>
+
+      <div class="f">
+        <label for="beef">كراتين لحم فُتحت</label>
+        <input type="number" inputmode="decimal" step="0.1" id="beef" placeholder="0.3">
+        <span class="hint">الكرتون 10 كجم · 3 كجم = 0.3</span>
+      </div>
+      <div class="f">
+        <label for="chk">كراتين دجاج فُتحت</label>
+        <input type="number" inputmode="decimal" step="0.1" id="chk" placeholder="0.3 أو 1">
+        <span class="hint">كرتون كامل = 1</span>
+      </div>
+
+      <div class="f">
+        <label for="inv">مشتريات بفواتير — ريال</label>
+        <input type="number" inputmode="decimal" id="inv" placeholder="0">
+        <span class="hint">موردون · بلا اللحوم أعلاه</span>
+      </div>
+      <div class="f">
+        <label for="cash">مشتريات نقد — ريال</label>
+        <input type="number" inputmode="decimal" id="cash" placeholder="0">
+        <span class="hint">خبز · خضار · غاز · بلا فاتورة</span>
+      </div>
+
+      <div class="f full">
+        <label for="note">ملاحظة (اختياري)</label>
+        <input type="text" id="note" placeholder="جمعة · مطر · عزيمة كبيرة…">
+      </div>
+    </div>
+    <button id="save">احفظ اليوم</button>
+    <button class="ghost" id="clear">تفريغ الحقول</button>
+  </div>
+
+  <div class="card">
+    <h2>ما تقوله أيامك حتى الآن</h2>
+    <dl class="tiles">
+      <div class="tile"><dt>أيام مسجّلة</dt><dd id="t-days">0</dd></div>
+      <div class="tile"><dt>متوسط المبيعات</dt><dd id="t-sales">—<small>ريال/يوم</small></dd></div>
+      <div class="tile"><dt>متوسط المواد</dt><dd id="t-mat">—<small>ريال/يوم</small></dd></div>
+      <div class="tile"><dt>نسبة المواد</dt><dd id="t-pct">—<small>٪</small></dd></div>
+      <div class="tile"><dt>لحم بقري</dt><dd id="t-beef">—<small>كجم/يوم</small></dd></div>
+      <div class="tile"><dt>دجاج</dt><dd id="t-chk">—<small>كجم/يوم</small></dd></div>
+    </dl>
+    <div class="verdict" id="verdict">سجّل ثلاثة أيام على الأقل ليظهر الحكم.</div>
+  </div>
+
+  <div class="card">
+    <h2>الأيام المسجّلة</h2>
+    <div id="list"><p class="empty">لا شيء بعد.</p></div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+(function(){
+  var PB = 22.63, PC = 23.93, KG = 10;   // سعر الكيلو من 890 كجم موثّقة · الكرتون 10 كجم
+  var db = null, rows = [];
+
+  function el(id){ return document.getElementById(id); }
+  function num(id){ var v = parseFloat(el(id).value); return isFinite(v) ? v : 0; }
+  function fmt(x, d){ return (x || 0).toLocaleString("en-US", {minimumFractionDigits:d||0, maximumFractionDigits:d||0}); }
+
+  function msg(text, bad){
+    var m = el("msg");
+    m.className = "msg " + (bad ? "err" : "ok");
+    m.textContent = text; m.hidden = false;
+    if(!bad) setTimeout(function(){ m.hidden = true; }, 4000);
+  }
+  function conn(state, text){
+    var c = el("conn"); c.setAttribute("data-s", state); el("conn-t").textContent = text;
+  }
+
+  function paint(){
+    var n = rows.length;
+    el("t-days").textContent = n;
+    var list = el("list");
+    if(!n){
+      list.innerHTML = '<p class="empty">لا شيء بعد.</p>';
+      el("t-sales").innerHTML = '—<small>ريال/يوم</small>';
+      el("t-mat").innerHTML   = '—<small>ريال/يوم</small>';
+      el("t-pct").innerHTML   = '—<small>٪</small>';
+      el("t-beef").innerHTML  = '—<small>كجم/يوم</small>';
+      el("t-chk").innerHTML   = '—<small>كجم/يوم</small>';
+      el("verdict").className = "verdict";
+      el("verdict").textContent = "سجّل ثلاثة أيام على الأقل ليظهر الحكم.";
+      return;
+    }
+    var S=0, M=0, B=0, C=0, O=0;
+    rows.forEach(function(r){
+      var mat = (r.beef||0)*KG*PB + (r.chk||0)*KG*PC + (r.inv||0) + (r.cash||0);
+      S += r.sales||0; M += mat; B += (r.beef||0)*KG; C += (r.chk||0)*KG; O += r.ops||0;
+      r._mat = mat;
+    });
+    var s = S/n, m = M/n, pct = S > 0 ? M/S*100 : 0;
+    el("t-sales").innerHTML = fmt(s) + '<small>ريال/يوم</small>';
+    el("t-mat").innerHTML   = fmt(m) + '<small>ريال/يوم</small>';
+    el("t-pct").innerHTML   = (S>0 ? fmt(pct,1) : "—") + '<small>٪</small>';
+    el("t-beef").innerHTML  = fmt(B/n,1) + '<small>كجم/يوم</small>';
+    el("t-chk").innerHTML   = fmt(C/n,1) + '<small>كجم/يوم</small>';
+
+    var v = el("verdict");
+    if(n < 3){
+      v.className = "verdict";
+      v.textContent = "سجّل " + (3-n) + " يومًا إضافيًا ليظهر الحكم.";
+    } else if(pct <= 0){
+      v.className = "verdict";
+      v.textContent = "أدخل المبيعات والمشتريات ليُحتسب الحكم.";
+    } else if(pct < 48){
+      v.className = "verdict a";
+      v.innerHTML = "<b>نسبة المواد " + fmt(pct,1) + "٪ — طبيعية.</b> يعني أن نظامك يسجّل مبيعاتك فعلًا، والمحل سليم الهامش. " +
+                    "وهامش مساهمتك <b>" + fmt(100-pct,1) + "٪</b>، فالتعادل عند ثوابت 9,529 هو <b>" +
+                    fmt(9529/((100-pct)/100)/30) + " ريالًا يوميًا</b>.";
+    } else if(pct < 60){
+      v.className = "verdict w";
+      v.innerHTML = "<b>نسبة المواد " + fmt(pct,1) + "٪ — مرتفعة لكنها ممكنة.</b> السبب المرجّح صِغر الحجم: نفس الخبز والزيت والغاز على طلبات أقل. " +
+                    "التعادل عندها <b>" + fmt(9529/((100-pct)/100)/30) + " ريالًا يوميًا</b> — وتنخفض تلقائيًا مع النمو.";
+    } else {
+      v.className = "verdict b";
+      v.innerHTML = "<b>نسبة المواد " + fmt(pct,1) + "٪ — مستحيلة لمحل مستمر.</b> لو صحّت أرقامك فالمعنى أن " +
+                    "<b>مبيعاتك الحقيقية أعلى مما يسجّله النظام</b>: عند نسبة طبيعية 42٪ تكون مبيعاتك نحو <b>" +
+                    fmt(m/0.42) + " ريالًا يوميًا</b> لا " + fmt(s) + ".";
+    }
+
+    var html = '<div class="tw"><table><thead><tr><th>اليوم</th><th>مبيعات</th><th>عمليات</th>' +
+               '<th>لحم</th><th>دجاج</th><th>مواد</th><th>٪</th><th></th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      var p = r.sales > 0 ? (r._mat/r.sales*100) : 0;
+      html += '<tr><td class="m">' + (r.date||"") + '</td>' +
+              '<td class="m">' + fmt(r.sales) + '</td>' +
+              '<td class="m">' + fmt(r.ops) + '</td>' +
+              '<td class="m">' + fmt((r.beef||0)*KG,1) + '</td>' +
+              '<td class="m">' + fmt((r.chk||0)*KG,1) + '</td>' +
+              '<td class="m">' + fmt(r._mat) + '</td>' +
+              '<td class="m">' + (r.sales>0 ? fmt(p,0) : "—") + '</td>' +
+              '<td><span class="del" data-id="' + r.id + '">حذف</span></td></tr>';
+    });
+    html += '</tbody></table></div>';
+    list.innerHTML = html;
+    Array.prototype.forEach.call(list.querySelectorAll(".del"), function(b){
+      b.addEventListener("click", function(){ remove(b.getAttribute("data-id")); });
+    });
+  }
+
+  function remove(id){
+    if(!db || !window.confirm("حذف هذا اليوم؟")) return;
+    db.collection("daylog").doc(id).delete().then(function(){
+      msg("حُذف.");
+    }, function(){ msg("تعذّر الحذف.", true); });
+  }
+
+  el("save").addEventListener("click", function(){
+    var d = el("d").value;
+    if(!d){ msg("اختر التاريخ أولًا.", true); return; }
+    if(!db){ msg("التخزين لم يفتح بعد — انتظر النقطة الخضراء.", true); return; }
+    var id = d.replace(/-/g, "");
+    var doc = {
+      date: d, sales: num("sales"), ops: num("ops"),
+      beef: num("beef"), chk: num("chk"), inv: num("inv"), cash: num("cash"),
+      note: el("note").value.trim(), savedAt: new Date().toISOString()
+    };
+    el("save").disabled = true;
+    db.collection("daylog").doc(id).set(doc).then(function(){
+      msg("حُفظ يوم " + d + " — وصل إلى كلود.");
+      ["sales","ops","beef","chk","inv","cash","note"].forEach(function(k){ el(k).value = ""; });
+      var t = new Date(d); t.setDate(t.getDate()+1);
+      el("d").value = t.toISOString().slice(0,10);
+      el("save").disabled = false;
+    }, function(e){
+      msg("تعذّر الحفظ: " + ((e && e.message) || "خطأ"), true);
+      el("save").disabled = false;
+    });
+  });
+
+  el("clear").addEventListener("click", function(){
+    ["sales","ops","beef","chk","inv","cash","note"].forEach(function(k){ el(k).value = ""; });
+  });
+
+  el("d").value = new Date().toISOString().slice(0,10);
+
+  if(!window.claude || !window.claude.use){
+    conn("err", "التخزين غير متاح في هذا العرض");
+  } else {
+    window.claude.use("db").then(function(h){
+      if(!h){ conn("err", "التخزين غير متاح"); return; }
+      db = h;
+      conn("on", "متصل — كل حفظ يصل كلود");
+      db.collection("daylog").orderBy("date", "asc").limit(200).onSnapshot(function(snap){
+        rows = [];
+        snap.forEach(function(doc){
+          var v = doc.data ? doc.data() : doc;
+          v.id = doc.id || (v.date || "").replace(/-/g, "");
+          rows.push(v);
+        });
+        paint();
+      }, function(){ conn("err", "انقطع التحديث المباشر"); });
+    }, function(){ conn("err", "تعذّر فتح التخزين"); });
+  }
+
+  paint();
+})();
+</script>
